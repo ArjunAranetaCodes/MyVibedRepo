@@ -1,0 +1,30 @@
+1) Quick Notes Sync
+   - Sync notes across devices using chrome.storage.sync
+
+2) Context Menu: Save Selection as Note
+   - Right-click selected text to save it as a note (chrome.contextMenus)
+
+3) Keyboard Shortcuts
+   - Add commands to open popup, save note, and highlight text (chrome.commands)
+
+4) Badge Counter for Notes
+   - Show number of saved notes on the extension badge (chrome.action.setBadgeText)
+
+5) Options Page for Settings
+   - Configure highlight color, auto-remove timing, and default behaviors (options_ui)
+
+6) Auto-Save Snippets
+   - Detect text selections and offer quick-save with timestamp and page URL
+
+7) Export / Import Notes
+   - Export notes to JSON and import from file to restore (downloads + file input)
+
+8) Per-Site Enable/Disable
+   - Toggle content script features per domain and persist preferences
+
+9) Capture Page Snapshot
+   - Capture visible tab to attach an image preview to a note (chrome.tabs.captureVisibleTab)
+
+10) Reminders and Notifications
+   - Schedule reminders for notes and show notifications (chrome.alarms + chrome.notifications)
+

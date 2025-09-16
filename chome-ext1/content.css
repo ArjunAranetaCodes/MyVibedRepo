@@ -1,0 +1,35 @@
+/* Content script styles */
+.extension-highlight {
+  background-color: #ffff00 !important;
+  padding: 2px 4px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 0 5px rgba(255, 255, 0, 0.5) !important;
+  animation: highlightPulse 0.5s ease-in-out !important;
+}
+
+@keyframes highlightPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.extension-indicator {
+  position: fixed !important;
+  top: 10px !important;
+  right: 10px !important;
+  z-index: 10000 !important;
+  background: rgba(0, 0, 0, 0.7) !important;
+  color: white !important;
+  padding: 5px 8px !important;
+  border-radius: 50% !important;
+  font-size: 12px !important;
+  cursor: pointer !important;
+  transition: all 0.3s ease !important;
+  opacity: 0.7 !important;
+}
+
+.extension-indicator:hover {
+  opacity: 1 !important;
+  transform: scale(1.2) !important;
+}
+

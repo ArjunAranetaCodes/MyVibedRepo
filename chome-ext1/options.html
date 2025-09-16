@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Extension Options</title>
+  <style>
+    body { font-family: Segoe UI, Arial, sans-serif; margin: 24px; }
+    h1 { font-size: 20px; }
+    .row { margin: 12px 0; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; }
+    input[type="color"], input[type="checkbox"], select { padding: 6px; }
+    .actions { margin-top: 20px; }
+    button { padding: 8px 14px; }
+    .msg { margin-top: 10px; color: #0a7; font-size: 12px; }
+  </style>
+  <script defer src="options.js"></script>
+  </head>
+<body>
+  <h1>Extension Settings</h1>
+  <div class="row">
+    <label for="highlightColor">Highlight color</label>
+    <input id="highlightColor" type="color" value="#ffff00" />
+  </div>
+  <div class="row">
+    <label><input id="autoRemove" type="checkbox" checked /> Auto-remove highlight after 5s</label>
+  </div>
+  <div class="row">
+    <label for="siteMode">Per-site behavior</label>
+    <select id="siteMode">
+      <option value="enabled">Enabled everywhere</option>
+      <option value="disabled">Disabled by default</option>
+    </select>
+  </div>
+  <div class="actions">
+    <button id="save">Save</button>
+    <span class="msg" id="msg"></span>
+  </div>
+</body>
+</html>
+
+
