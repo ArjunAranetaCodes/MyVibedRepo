@@ -210,6 +210,31 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     
     return true; // Respond asynchronously after storage write completes
   }
+
+  if (request.action === 'recordLinkClick' && request.link) {
+    const entry = {
+      ...request.link,
+      tabUrl: sender?.tab?.url || undefined,
+      tabId: sender?.tab?.id || undefined
+    };
+    chrome.storage.local.get(['linkClicks'], function(result) {
+      const clicks = result.linkClicks || [];
+      clicks.push(entry);
+      // keep only last 200
+      if (clicks.length > 200) {
+        clicks.splice(0, clicks.length - 200);
+      }
+      chrome.storage.local.set({ linkClicks: clicks }, function() {
+        if (chrome.runtime.lastError) {
+          console.error('[BG:onMessage:recordLinkClick] Failed:', chrome.runtime.lastError);
+          sendResponse({ success: false });
+        } else {
+          sendResponse({ success: true });
+        }
+      });
+    });
+    return true; // async response
+  }
 });
 
 // Periodic cleanup task (runs every hour).
