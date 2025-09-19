@@ -9,27 +9,113 @@ document.addEventListener('DOMContentLoaded', function() {
   const importInput = document.getElementById('importNotes');
   const status = document.getElementById('status');
 
-  // Load saved note
-  chrome.storage.local.get(['savedNote'], function(result) {
-    if (result.savedNote) {
-      noteInput.value = result.savedNote;
-    }
-  });
+  // New controls
+  const recordToggle = document.getElementById('recordToggle');
+  const profileNameInput = document.getElementById('profileName');
+  const profileSelect = document.getElementById('profileSelect');
+  const saveProfileBtn = document.getElementById('saveProfileBtn');
+  const applyProfileBtn = document.getElementById('applyProfileBtn');
+  const profilesListEl = document.getElementById('profilesList');
 
-  // Save note functionality
-  saveNoteBtn.addEventListener('click', function() {
-    const note = noteInput.value.trim();
-    if (note) {
-      chrome.storage.local.set({savedNote: note}, function() {
-        updateStatus('Note saved successfully!', 'success');
-      });
-    } else {
-      updateStatus('Please enter a note first!', 'error');
+  // -------- Profiles helpers --------
+  function loadProfiles(cb) {
+    chrome.storage.local.get(['profiles'], function(res) {
+      const profiles = Array.isArray(res.profiles) ? res.profiles : [];
+      cb(profiles);
+    });
+  }
+  function saveProfiles(profiles, cb) {
+    chrome.storage.local.set({ profiles }, cb);
+  }
+  function renderProfilesList(profiles) {
+    if (!profilesListEl) return;
+    profilesListEl.innerHTML = '';
+    if (!profiles.length) {
+      const empty = document.createElement('div');
+      empty.className = 'list-item';
+      empty.textContent = 'No recorded cases yet';
+      profilesListEl.appendChild(empty);
+      return;
     }
+    profiles.forEach((name) => {
+      const row = document.createElement('div');
+      row.className = 'list-item';
+      const left = document.createElement('div');
+      left.className = 'name';
+      left.textContent = name;
+      const right = document.createElement('div');
+      right.className = 'list-actions';
+      const selectBtn = document.createElement('button');
+      selectBtn.className = 'mini-btn';
+      selectBtn.textContent = 'Select';
+      selectBtn.addEventListener('click', function() {
+        profileNameInput && (profileNameInput.value = name);
+        if (profileSelect) {
+          for (let i = 0; i < profileSelect.options.length; i++) {
+            if (profileSelect.options[i].value === name) {
+              profileSelect.selectedIndex = i;
+              break;
+            }
+          }
+        }
+      });
+      const applyBtn = document.createElement('button');
+      applyBtn.className = 'mini-btn';
+      applyBtn.textContent = 'Apply';
+      applyBtn.addEventListener('click', function() {
+        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+          if (tabs[0]) {
+            chrome.tabs.sendMessage(tabs[0].id, { action: 'applyProfile', profileName: name }, function(resp) {
+              if (resp && resp.success) {
+                updateStatus(`Applied: ${name}`, 'success');
+              } else {
+                updateStatus('Apply failed or no data recorded', 'error');
+              }
+            });
+          }
+        });
+      });
+      right.appendChild(selectBtn);
+      right.appendChild(applyBtn);
+      row.appendChild(left);
+      row.appendChild(right);
+      profilesListEl.appendChild(row);
+    });
+  }
+  function updateProfileSelect(profiles, selected) {
+    if (profileSelect) {
+      while (profileSelect.firstChild) profileSelect.removeChild(profileSelect.firstChild);
+      const placeholder = document.createElement('option');
+      placeholder.value = '';
+      placeholder.textContent = profiles.length ? 'Select a profile' : 'No profiles yet';
+      profileSelect.appendChild(placeholder);
+      profiles.forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        if (selected && selected === name) opt.selected = true;
+        profileSelect.appendChild(opt);
+      });
+    }
+    renderProfilesList(profiles);
+  }
+  function ensureUniqueName(base, existing) {
+    if (!existing.includes(base)) return base;
+    let i = 2;
+    while (existing.includes(`${base} (${i})`)) i++;
+    return `${base} (${i})`;
+  }
+
+  // Initialize profiles dropdown and list
+  loadProfiles((profiles) => updateProfileSelect(profiles));
+
+  // Save note button now just serves as a generic primary action label
+  saveNoteBtn?.addEventListener('click', function() {
+    updateStatus('Ready', 'info');
   });
 
   // Get page info functionality
-  getPageInfoBtn.addEventListener('click', function() {
+  getPageInfoBtn?.addEventListener('click', function() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       const currentTab = tabs[0];
       const pageInfo = {
@@ -37,18 +123,13 @@ document.addEventListener('DOMContentLoaded', function() {
         url: currentTab.url,
         timestamp: new Date().toLocaleString()
       };
-      
       updateStatus(`Page: ${pageInfo.title}`, 'info');
-      
-      // Store page info
-      chrome.storage.local.set({lastPageInfo: pageInfo}, function() {
-        console.log('Page info saved');
-      });
+      chrome.storage.local.set({lastPageInfo: pageInfo}, function() {});
     });
   });
 
   // Highlight text functionality
-  highlightTextBtn.addEventListener('click', function() {
+  highlightTextBtn?.addEventListener('click', function() {
     chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
       chrome.tabs.sendMessage(tabs[0].id, {action: 'highlightText'}, function(response) {
         if (response && response.success) {
@@ -61,10 +142,10 @@ document.addEventListener('DOMContentLoaded', function() {
   });
 
   // Clear data functionality
-  clearDataBtn.addEventListener('click', function() {
+  clearDataBtn?.addEventListener('click', function() {
     chrome.storage.local.clear(function() {
-      noteInput.value = '';
       updateStatus('All data cleared!', 'info');
+      updateProfileSelect([]);
     });
   });
 
@@ -96,7 +177,6 @@ document.addEventListener('DOMContentLoaded', function() {
           const merged = existing.concat(imported);
           chrome.storage.sync.set({ notes: merged }, function() {
             updateStatus('Notes imported', 'success');
-            // Update badge count via background helper if present
             chrome.runtime.sendMessage({ action: 'refreshBadge' });
           });
         });
@@ -105,6 +185,78 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     };
     reader.readAsText(file);
+  });
+
+  // ---------- Record flow ----------
+  recordToggle?.addEventListener('change', function() {
+    if (recordToggle.checked) {
+      loadProfiles(function(existing) {
+        const raw = prompt('Enter a case name');
+        const trimmed = (raw || '').trim();
+        if (!trimmed) {
+          recordToggle.checked = false;
+          updateStatus('Recording cancelled', 'info');
+          return;
+        }
+        const unique = ensureUniqueName(trimmed, existing);
+        const updated = existing.concat(unique);
+        saveProfiles(updated, function() {
+          profileNameInput && (profileNameInput.value = unique);
+          updateProfileSelect(updated, unique);
+          updateStatus(`Recording: ${unique}`, 'success');
+          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+            if (tabs[0]) {
+              chrome.tabs.sendMessage(tabs[0].id, { action: 'startRecording', profileName: unique });
+            }
+          });
+        });
+      });
+    } else {
+      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+        if (tabs[0]) {
+          chrome.tabs.sendMessage(tabs[0].id, { action: 'stopRecording' });
+        }
+      });
+      updateStatus('Recording stopped', 'info');
+    }
+  });
+
+  // Save profile explicitly
+  saveProfileBtn?.addEventListener('click', function() {
+    const name = (profileNameInput?.value || '').trim();
+    if (!name) {
+      updateStatus('Enter a profile name first', 'error');
+      return;
+    }
+    loadProfiles(function(existing) {
+      const unique = ensureUniqueName(name, existing);
+      const updated = existing.concat(unique);
+      saveProfiles(updated, function() {
+        updateProfileSelect(updated, unique);
+        updateStatus(`Saved profile: ${unique}`, 'success');
+      });
+    });
+  });
+
+  // Apply selected profile
+  applyProfileBtn?.addEventListener('click', function() {
+    const selected = profileSelect?.value || profileNameInput?.value || '';
+    const name = (selected || '').trim();
+    if (!name) {
+      updateStatus('Select or enter a profile name', 'error');
+      return;
+    }
+    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
+      if (tabs[0]) {
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'applyProfile', profileName: name }, function(resp) {
+          if (resp && resp.success) {
+            updateStatus(`Applied: ${name}`, 'success');
+          } else {
+            updateStatus('Apply failed or no data recorded', 'error');
+          }
+        });
+      }
+    });
   });
 
   // Update status message
