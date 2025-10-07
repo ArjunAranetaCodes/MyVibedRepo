@@ -3,6 +3,32 @@
 // lifecycle events, cross-page coordination, alarms, and messaging.
 console.log('[BG] Service worker loaded');
 
+// --- Recording state helpers (per-tab, session-scoped) ---
+async function getRecordingState() {
+  return new Promise((resolve) => {
+    chrome.storage.session.get(['recordingTabs'], (res) => {
+      resolve(res.recordingTabs || {});
+    });
+  });
+}
+async function setRecordingState(recordingTabs) {
+  return new Promise((resolve) => {
+    chrome.storage.session.set({ recordingTabs }, resolve);
+  });
+}
+async function startRecordingOnTab(tabId, profileName) {
+  const state = await getRecordingState();
+  state[String(tabId)] = { profileName };
+  await setRecordingState(state);
+  try { chrome.tabs.sendMessage(tabId, { action: 'startRecording', profileName }); } catch (e) {}
+}
+async function stopRecordingOnTab(tabId) {
+  const state = await getRecordingState();
+  delete state[String(tabId)];
+  await setRecordingState(state);
+  try { chrome.tabs.sendMessage(tabId, { action: 'stopRecording' }); } catch (e) {}
+}
+
 // Create context menu entries on install
 chrome.runtime.onInstalled.addListener(() => {
   try {
@@ -126,7 +152,7 @@ chrome.runtime.onInstalled.addListener(function(details) {
   }
 });
 
-// Listen for tab updates. When a tab finishes loading, bump a usage counter.
+// Listen for tab updates. When a tab finishes loading, bump a usage counter and restart recording if active.
 chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
   if (changeInfo.status === 'loading') {
     console.log('[BG:onUpdated] Tab', tabId, 'is loading...');
@@ -151,6 +177,20 @@ chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
         }
       });
     });
+
+    // Restart recording if this tab is marked as recording in session state
+    (async () => {
+      const state = await getRecordingState();
+      const entry = state[String(tabId)];
+      if (entry && entry.profileName) {
+        try {
+          chrome.tabs.sendMessage(tabId, { action: 'startRecording', profileName: entry.profileName });
+          console.log('[BG:onUpdated] Re-started recording on tab', tabId);
+        } catch (e) {
+          console.warn('[BG:onUpdated] Failed to send startRecording after navigation');
+        }
+      }
+    })();
   }
 });
 
@@ -211,29 +251,51 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     return true; // Respond asynchronously after storage write completes
   }
 
-  if (request.action === 'recordLinkClick' && request.link) {
-    const entry = {
-      ...request.link,
-      tabUrl: sender?.tab?.url || undefined,
-      tabId: sender?.tab?.id || undefined
-    };
-    chrome.storage.local.get(['linkClicks'], function(result) {
-      const clicks = result.linkClicks || [];
-      clicks.push(entry);
-      // keep only last 200
-      if (clicks.length > 200) {
-        clicks.splice(0, clicks.length - 200);
+  // From popup: start/stop on active tab using session state (persists across navigations)
+  if (request.action === 'startRecordingForActiveTab') {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      if (tabs[0]) {
+        await startRecordingOnTab(tabs[0].id, request.profileName);
+        sendResponse({ ok: true });
+      } else {
+        sendResponse({ ok: false });
       }
-      chrome.storage.local.set({ linkClicks: clicks }, function() {
-        if (chrome.runtime.lastError) {
-          console.error('[BG:onMessage:recordLinkClick] Failed:', chrome.runtime.lastError);
-          sendResponse({ success: false });
-        } else {
-          sendResponse({ success: true });
-        }
-      });
     });
-    return true; // async response
+    return true;
+  }
+
+  if (request.action === 'stopRecordingForActiveTab') {
+    chrome.tabs.query({ active: true, currentWindow: true }, async (tabs) => {
+      if (tabs[0]) {
+        await stopRecordingOnTab(tabs[0].id);
+        sendResponse({ ok: true });
+      } else {
+        sendResponse({ ok: false });
+      }
+    });
+    return true;
+  }
+
+  // From content page: ask if this tab is recording
+  if (request.action === 'getRecordingStateForTab') {
+    (async () => {
+      const state = await getRecordingState();
+      const tabId = sender && sender.tab && sender.tab.id ? String(sender.tab.id) : '';
+      const entry = tabId ? state[tabId] : undefined;
+      sendResponse({ recording: !!entry, profileName: entry ? entry.profileName : undefined });
+    })();
+    return true;
+  }
+
+  // In-page toolbar stop button
+  if (request.action === 'stopRecordingFromPage') {
+    if (sender && sender.tab && sender.tab.id) {
+      stopRecordingOnTab(sender.tab.id);
+      sendResponse({ ok: true });
+    } else {
+      sendResponse({ ok: false });
+    }
+    return true;
   }
 });
 
