@@ -17,6 +17,40 @@ document.addEventListener('DOMContentLoaded', function() {
   const applyProfileBtn = document.getElementById('applyProfileBtn');
   const profilesListEl = document.getElementById('profilesList');
 
+  // -------- Messaging helper (inject-on-fail) --------
+  function sendToActiveTab(message, callback) {
+    chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+      const tab = tabs && tabs[0];
+      if (!tab || !tab.id) {
+        callback && callback({ ok: false, error: 'No active tab' });
+        updateStatus('No active tab', 'error');
+        return;
+      }
+      chrome.tabs.sendMessage(tab.id, message, function(response) {
+        const err = chrome.runtime.lastError;
+        if (err && /Receiving end does not exist/i.test(String(err.message || ''))) {
+          // Attempt to inject content.js, then retry once
+          chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['content.js'] }, function() {
+            chrome.tabs.sendMessage(tab.id, message, function(r2) {
+              const err2 = chrome.runtime.lastError;
+              if (err2) {
+                updateStatus('Page not supported for recording', 'error');
+                callback && callback({ ok: false, error: err2.message });
+              } else {
+                callback && callback({ ok: true, response: r2 });
+              }
+            });
+          });
+        } else if (err) {
+          updateStatus('Failed to reach page', 'error');
+          callback && callback({ ok: false, error: err.message });
+        } else {
+          callback && callback({ ok: true, response });
+        }
+      });
+    });
+  }
+
   // -------- Profiles helpers --------
   function loadProfiles(cb) {
     chrome.storage.local.get(['profiles'], function(res) {
@@ -63,20 +97,35 @@ document.addEventListener('DOMContentLoaded', function() {
       applyBtn.className = 'mini-btn';
       applyBtn.textContent = 'Apply';
       applyBtn.addEventListener('click', function() {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-          if (tabs[0]) {
-            chrome.tabs.sendMessage(tabs[0].id, { action: 'applyProfile', profileName: name }, function(resp) {
-              if (resp && resp.success) {
-                updateStatus(`Applied: ${name}`, 'success');
-              } else {
-                updateStatus('Apply failed or no data recorded', 'error');
-              }
-            });
+        sendToActiveTab({ action: 'applyProfile', profileName: name }, function(res) {
+          if (res && res.ok) {
+            updateStatus(`Applied: ${name}`, 'success');
           }
+        });
+      });
+      const deleteBtn = document.createElement('button');
+      deleteBtn.className = 'mini-btn';
+      deleteBtn.textContent = 'Delete';
+      deleteBtn.addEventListener('click', function() {
+        if (!confirm(`Delete case "${name}"?`)) return;
+        loadProfiles(function(existing) {
+          const updated = existing.filter(n => n !== name);
+          chrome.storage.local.get(['recordings'], function(r) {
+            const recordings = r.recordings || {};
+            if (recordings[name]) delete recordings[name];
+            chrome.storage.local.set({ recordings }, function() {
+              saveProfiles(updated, function() {
+                updateProfileSelect(updated);
+                if (profileNameInput && profileNameInput.value === name) profileNameInput.value = '';
+                updateStatus('Case deleted', 'success');
+              });
+            });
+          });
         });
       });
       right.appendChild(selectBtn);
       right.appendChild(applyBtn);
+      right.appendChild(deleteBtn);
       row.appendChild(left);
       row.appendChild(right);
       profilesListEl.appendChild(row);
@@ -130,14 +179,14 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // Highlight text functionality
   highlightTextBtn?.addEventListener('click', function() {
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      chrome.tabs.sendMessage(tabs[0].id, {action: 'highlightText'}, function(response) {
-        if (response && response.success) {
-          updateStatus('Text highlighted!', 'success');
-        } else {
-          updateStatus('No text selected or error occurred', 'error');
-        }
-      });
+    sendToActiveTab({ action: 'highlightText' }, function(res) {
+      if (res && res.ok && res.response && res.response.success) {
+        updateStatus('Text highlighted!', 'success');
+      } else if (res && !res.ok) {
+        // already handled in helper
+      } else {
+        updateStatus('No text selected or error occurred', 'error');
+      }
     });
   });
 
@@ -189,6 +238,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
   // ---------- Record flow ----------
   recordToggle?.addEventListener('change', function() {
+    console.log('[Popup] Record toggle clicked', { checked: recordToggle.checked });
     if (recordToggle.checked) {
       loadProfiles(function(existing) {
         const raw = prompt('Enter a case name');
@@ -204,19 +254,11 @@ document.addEventListener('DOMContentLoaded', function() {
           profileNameInput && (profileNameInput.value = unique);
           updateProfileSelect(updated, unique);
           updateStatus(`Recording: ${unique}`, 'success');
-          chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs[0]) {
-              chrome.tabs.sendMessage(tabs[0].id, { action: 'startRecording', profileName: unique });
-            }
-          });
+          sendToActiveTab({ action: 'startRecording', profileName: unique });
         });
       });
     } else {
-      chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, { action: 'stopRecording' });
-        }
-      });
+      sendToActiveTab({ action: 'stopRecording' });
       updateStatus('Recording stopped', 'info');
     }
   });
@@ -246,42 +288,34 @@ document.addEventListener('DOMContentLoaded', function() {
       updateStatus('Select or enter a profile name', 'error');
       return;
     }
-    chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-      if (tabs[0]) {
-        chrome.tabs.sendMessage(tabs[0].id, { action: 'applyProfile', profileName: name }, function(resp) {
-          if (resp && resp.success) {
-            updateStatus(`Applied: ${name}`, 'success');
-          } else {
-            updateStatus('Apply failed or no data recorded', 'error');
-          }
-        });
+    sendToActiveTab({ action: 'applyProfile', profileName: name }, function(res) {
+      if (res && res.ok) {
+        updateStatus(`Applied: ${name}`, 'success');
       }
     });
   });
 
   // Update status message
   function updateStatus(message, type) {
-    status.textContent = message;
-    status.className = 'status';
-    
+    const el = status;
+    el.textContent = message;
+    el.className = 'status';
     switch(type) {
       case 'success':
-        status.style.background = 'rgba(76, 175, 80, 0.3)';
+        el.style.background = 'rgba(76, 175, 80, 0.3)';
         break;
       case 'error':
-        status.style.background = 'rgba(244, 67, 54, 0.3)';
+        el.style.background = 'rgba(244, 67, 54, 0.3)';
         break;
       case 'info':
-        status.style.background = 'rgba(33, 150, 243, 0.3)';
+        el.style.background = 'rgba(33, 150, 243, 0.3)';
         break;
       default:
-        status.style.background = 'rgba(255, 255, 255, 0.1)';
+        el.style.background = 'rgba(255, 255, 255, 0.1)';
     }
-    
-    // Reset status after 3 seconds
     setTimeout(() => {
-      status.textContent = 'Ready to use!';
-      status.style.background = 'rgba(255, 255, 255, 0.1)';
+      el.textContent = 'Ready to use!';
+      el.style.background = 'rgba(255, 255, 255, 0.1)';
     }, 3000);
   }
 });
