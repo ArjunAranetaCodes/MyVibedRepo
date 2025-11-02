@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Liquid Glass</title>
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; background: #0b0f14; }
+  svg { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  /* Optional film softness */
+  .grain { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.05; mix-blend-mode: soft-light; }
+  
+  /* Menu styles */
+  .menu { position: fixed; top: 14px; left: 14px; z-index: 20; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+  .menu-button { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); color: #e8f6ff; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; letter-spacing: 0.04em; font-size: 14px; backdrop-filter: blur(10px); }
+  .menu-button:hover { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.2); }
+  .menu-items { position: absolute; top: 100%; left: 0; margin-top: 4px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px; min-width: 160px; backdrop-filter: blur(10px); display: none; }
+  .menu-items.open { display: block; }
+  .menu-item { color: #e8f6ff; padding: 10px 12px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-size: 14px; position: relative; }
+  .menu-item:hover { background: rgba(255, 255, 255, 0.1); }
+  .menu-item-icon { font-size: 18px; }
+  .submenu { position: absolute; left: 100%; top: 0; margin-left: 4px; background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px; min-width: 180px; backdrop-filter: blur(10px); display: none; }
+  .menu-item:hover .submenu { display: block; }
+  .submenu-label { color: #e8f6ff; font-size: 12px; margin-bottom: 4px; display: block; }
+  .submenu-input { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 6px 8px; color: #e8f6ff; font-size: 14px; box-sizing: border-box; margin-bottom: 8px; }
+  .submenu-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.15); }
+  .submenu-input::placeholder { color: rgba(232, 246, 255, 0.5); }
+  .submenu-button { width: 100%; background: rgba(123, 87, 255, 0.6); border: 1px solid rgba(123, 87, 255, 0.8); border-radius: 6px; padding: 8px; color: #e8f6ff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+  .submenu-button:hover { background: rgba(123, 87, 255, 0.8); }
+  
+  /* Pause/Play button */
+  .timer-controls { position: fixed; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 15; }
+  .pause-play-btn { width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); transition: all 0.3s ease; line-height: 1; padding: 0;  padding-bottom: 2px;  text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3); }
+  .pause-play-btn:hover { background: rgba(0, 0, 0, 0.7); border-color: rgba(255, 255, 255, 0.5); transform: scale(1.1); }
+</style>
+</head>
+<body>
+  <div class="menu">
+    <button class="menu-button" id="menuButton">☰ Menu</button>
+    <div class="menu-items" id="menuItems">
+      <div class="menu-item">
+        <span class="menu-item-icon">⏱️</span>
+        <span>Timer Settings</span>
+        <div class="submenu">
+          <label class="submenu-label" for="timerInput">Timer (minutes)</label>
+          <input type="text" id="timerInput" class="submenu-input" placeholder="25" />
+          <label class="submenu-label" for="backgroundType">Background</label>
+          <select id="backgroundType" class="submenu-input" style="margin-bottom: 8px;">
+            <option value="liquid-glass">Liquid Glass</option>
+            <option value="solid-color">Solid Color</option>
+          </select>
+          <div id="colorPickerContainer" style="display: none; margin-bottom: 8px;">
+            <input type="color" id="backgroundColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px;" />
+          </div>
+          <button class="submenu-button" id="applyTimerBtn">Apply</button>
+        </div>
+      </div>
+      <!-- <div class="menu-item" onclick="console.log('Menu item 2 clicked')">
+        <span class="menu-item-icon">⚙️</span>
+        <span>Settings</span>
+      </div> -->
+      <div class="menu-item">
+        <span class="menu-item-icon">🍅</span>
+        <span>Pomodoro</span>
+        <div class="submenu">
+          <label class="submenu-label" for="focusInput">Focus (minutes)</label>
+          <input type="text" id="focusInput" class="submenu-input" placeholder="25" />
+          <label class="submenu-label" for="breakInput">Break (minutes)</label>
+          <input type="text" id="breakInput" class="submenu-input" placeholder="5" />
+          <label class="submenu-label" for="pomodoroBackgroundType">Background</label>
+          <select id="pomodoroBackgroundType" class="submenu-input" style="margin-bottom: 8px;">
+            <option value="liquid-glass">Liquid Glass</option>
+            <option value="solid-color">Solid Color</option>
+          </select>
+          <div id="pomodoroColorPickerContainer" style="display: none;">
+            <label class="submenu-label" for="focusColorPicker">Focus Color</label>
+            <input type="color" id="focusColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px; margin-bottom: 8px;" />
+            <label class="submenu-label" for="breakColorPicker">Break Color</label>
+            <input type="color" id="breakColorPicker" class="submenu-input" value="#1a2f3a" style="height: 40px; cursor: pointer; padding: 4px; margin-bottom: 8px;" />
+          </div>
+          <button class="submenu-button" id="applyPomodoroBtn">Apply</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div id="timer" style="position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;color:#ffffff;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:700;letter-spacing:0.06em;background:transparent;z-index:10;line-height:1;-webkit-text-stroke:2px #bbbbbb;text-stroke:2px #bbbbbb;margin-top:-80px;">01:00</div>
+  <div class="timer-controls">
+    <button class="pause-play-btn" id="pausePlayBtn">▶</button>
+  </div>
+  <!-- Fullscreen SVG with gradient content distorted by turbulence -->
+  <svg id="liquidGlassBg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <!-- Animated gradient; colors will be shifted via JS (HSL drift) -->
+      <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop id="s0" offset="0%" stop-color="#3a6ff0" />
+        <stop id="s1" offset="50%" stop-color="#7ce3ff" />
+        <stop id="s2" offset="100%" stop-color="#7bffb1" />
+      </linearGradient>
+
+      <!-- Liquid glass filter: noise + displacement + slight blur -->
+      <filter id="liquid" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence id="turb" type="turbulence" baseFrequency="0.005 0.009" numOctaves="2" seed="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="55" xChannelSelector="R" yChannelSelector="G" />
+        <feGaussianBlur stdDeviation="0.8" />
+      </filter>
+    </defs>
+
+    <!-- Content to distort: a rect filled with our gradient -->
+    <g filter="url(#liquid)">
+      <rect x="-50" y="-50" width="1100" height="1100" fill="url(#lg)" />
+    </g>
+  </svg>
+  <canvas id="grainCanvas" class="grain"></canvas>
+
+<script>
+(function(){
+  // Menu toggle
+  const menuButton = document.getElementById('menuButton');
+  const menuItems = document.getElementById('menuItems');
+  menuButton.addEventListener('click', function(e) {
+    e.stopPropagation();
+    menuItems.classList.toggle('open');
+  });
+  document.addEventListener('click', function(e) {
+    if (!menuButton.contains(e.target) && !menuItems.contains(e.target)) {
+      menuItems.classList.remove('open');
+    }
+  });
+
+  // Timer settings
+  const timerInput = document.getElementById('timerInput');
+  const applyTimerBtn = document.getElementById('applyTimerBtn');
+  const backgroundType = document.getElementById('backgroundType');
+  const backgroundColorPicker = document.getElementById('backgroundColorPicker');
+  const colorPickerContainer = document.getElementById('colorPickerContainer');
+  const liquidGlassBg = document.getElementById('liquidGlassBg');
+  const grainCanvas = document.getElementById('grainCanvas');
+  
+  // Background state
+  let backgroundMode = 'liquid-glass'; // 'liquid-glass' or 'solid-color'
+  let backgroundColor = '#0b0f14'; // Default dark background
+  
+  // Show/hide color picker based on background type
+  backgroundType.addEventListener('change', function() {
+    if (this.value === 'solid-color') {
+      colorPickerContainer.style.display = 'block';
+    } else {
+      colorPickerContainer.style.display = 'none';
+    }
+  });
+  
+  // Pomodoro settings
+  const focusInput = document.getElementById('focusInput');
+  const breakInput = document.getElementById('breakInput');
+  const applyPomodoroBtn = document.getElementById('applyPomodoroBtn');
+  const pomodoroBackgroundType = document.getElementById('pomodoroBackgroundType');
+  const focusColorPicker = document.getElementById('focusColorPicker');
+  const breakColorPicker = document.getElementById('breakColorPicker');
+  const pomodoroColorPickerContainer = document.getElementById('pomodoroColorPickerContainer');
+  
+  // Pomodoro background state
+  let pomodoroBackgroundMode = 'liquid-glass'; // 'liquid-glass' or 'solid-color'
+  let pomodoroFocusColor = '#0b0f14'; // Default dark background for focus
+  let pomodoroBreakColor = '#1a2f3a'; // Default darker background for break
+  
+  // Show/hide color pickers based on Pomodoro background type
+  pomodoroBackgroundType.addEventListener('change', function() {
+    if (this.value === 'solid-color') {
+      pomodoroColorPickerContainer.style.display = 'block';
+    } else {
+      pomodoroColorPickerContainer.style.display = 'none';
+    }
+  });
+  
+  const TIMER_MINUTES = 30; // CHANGE THIS to set timer minutes
+  const TIMER_SECONDS = 10; // CHANGE THIS to set timer seconds
+  let focusDurationMs = 25 * 60 * 1000; // Default 25 minutes
+  let breakDurationMs = 5 * 60 * 1000; // Default 5 minutes
+  let timerDurationMs = focusDurationMs;
+  let isFocusMode = true; // true = focus, false = break
+  let isPomodoroMode = true; // true = Pomodoro (focus-break cycle), false = simple timer
+  const TIMER_FONT_SIZE = 300; // px - CHANGE THIS VALUE to modify timer font size
+  const timerEl = document.getElementById('timer');
+  timerEl.style.fontSize = TIMER_FONT_SIZE + 'px';
+  let startTime = performance.now();
+  let last = startTime;
+  let rafId1 = 0, rafId2 = 0;
+  let isPaused = true; // Start paused when page loads
+  let pausedElapsed = 0; // Accumulated elapsed time when paused
+  let pauseStartTime = 0;
+  
+  // Pause/Play button
+  const pausePlayBtn = document.getElementById('pausePlayBtn');
+  pausePlayBtn.addEventListener('click', function() {
+    isPaused = !isPaused;
+    if (isPaused) {
+      // Pause: accumulate elapsed time and stop animation
+      const now = performance.now();
+      pausedElapsed += now - startTime;
+      pauseStartTime = now;
+      pausePlayBtn.textContent = '▶';
+      // Don't stop the frame function, but it will skip timer updates
+    } else {
+      // Resume: reset startTime to current time
+      const now = performance.now();
+      startTime = now;
+      last = now;
+      // If pausedElapsed is 0, we're starting fresh (after auto-pause) - keep it at 0
+      // If pausedElapsed > 0, we're resuming a manual pause - keep the accumulated time
+      pausePlayBtn.textContent = '⏸';
+    }
+  });
+  
+  // Function to apply background settings
+  function applyBackgroundSettings() {
+    backgroundMode = backgroundType.value;
+    
+    if (backgroundMode === 'solid-color') {
+      backgroundColor = backgroundColorPicker.value;
+      // Hide liquid glass elements
+      liquidGlassBg.style.display = 'none';
+      grainCanvas.style.display = 'none';
+      // Set solid background color
+      document.body.style.background = backgroundColor;
+      // Stop grain animation
+      if (rafId2) {
+        cancelAnimationFrame(rafId2);
+        rafId2 = 0;
+      }
+    } else {
+      // Show liquid glass elements
+      liquidGlassBg.style.display = 'block';
+      grainCanvas.style.display = 'block';
+      // Reset body background to default
+      document.body.style.background = '#0b0f14';
+      // Start grain animation if not already running
+      if (!rafId2) {
+        rafId2 = requestAnimationFrame(drawGrain);
+      }
+    }
+  }
+  
+  applyTimerBtn.addEventListener('click', function() {
+    const timerMinutes = parseInt(timerInput.value) || 25;
+    timerDurationMs = timerMinutes * 60 * 1000;
+    isPomodoroMode = false; // Disable Pomodoro cycling - use simple timer
+    isFocusMode = true; // Set to focus mode (though it won't cycle)
+    startTime = performance.now();
+    last = startTime;
+    pausedElapsed = 0; // Reset paused time
+    isPaused = false; // Reset pause state
+    pausePlayBtn.textContent = '⏸'; // Reset button icon
+    
+    // Apply background settings (only for simple timer mode)
+    applyBackgroundSettings();
+    
+    console.log('Timer settings applied:', { 
+      minutes: timerMinutes, 
+      mode: 'simple timer (focus only)',
+      background: backgroundMode,
+      backgroundColor: backgroundMode === 'solid-color' ? backgroundColor : 'N/A'
+    });
+    // Restart animation if it had stopped
+    if (!rafId1) {
+      rafId1 = requestAnimationFrame(frame);
+    }
+    // Only start grain animation if liquid glass mode
+    // Timer settings use backgroundMode, Pomodoro uses pomodoroBackgroundMode
+    const shouldShowLiquidGlass = isPomodoroMode 
+      ? (pomodoroBackgroundMode === 'liquid-glass')
+      : (backgroundMode === 'liquid-glass');
+    
+    if (shouldShowLiquidGlass) {
+      if (!rafId2) {
+        rafId2 = requestAnimationFrame(drawGrain);
+      }
+    } else {
+      // Stop grain animation if solid color mode
+      if (rafId2) {
+        cancelAnimationFrame(rafId2);
+        rafId2 = 0;
+      }
+    }
+    // Close the menu after applying
+    menuItems.classList.remove('open');
+  });
+  
+  // Function to apply Pomodoro background settings
+  function applyPomodoroBackgroundSettings() {
+    pomodoroBackgroundMode = pomodoroBackgroundType.value;
+    pomodoroFocusColor = focusColorPicker.value;
+    pomodoroBreakColor = breakColorPicker.value;
+    
+    // Apply background based on current mode (focus or break)
+    if (pomodoroBackgroundMode === 'solid-color') {
+      // Hide liquid glass elements
+      liquidGlassBg.style.display = 'none';
+      grainCanvas.style.display = 'none';
+      // Set color based on current mode
+      document.body.style.background = isFocusMode ? pomodoroFocusColor : pomodoroBreakColor;
+      // Stop grain animation
+      if (rafId2) {
+        cancelAnimationFrame(rafId2);
+        rafId2 = 0;
+      }
+    } else {
+      // Show liquid glass elements
+      liquidGlassBg.style.display = 'block';
+      grainCanvas.style.display = 'block';
+      // Reset body background to default
+      document.body.style.background = '#0b0f14';
+      // Start grain animation if not already running
+      if (!rafId2) {
+        rafId2 = requestAnimationFrame(drawGrain);
+      }
+    }
+  }
+  
+  applyPomodoroBtn.addEventListener('click', function() {
+    const focusMinutes = parseInt(focusInput.value) || 25;
+    const breakMinutes = parseInt(breakInput.value) || 5;
+    focusDurationMs = focusMinutes * 60 * 1000;
+    breakDurationMs = breakMinutes * 60 * 1000;
+    // Enable Pomodoro mode (focus-break cycling)
+    isPomodoroMode = true;
+    // Start with focus mode
+    isFocusMode = true;
+    timerDurationMs = focusDurationMs;
+    startTime = performance.now();
+    last = startTime;
+    pausedElapsed = 0; // Reset paused time
+    isPaused = false; // Reset pause state
+    pausePlayBtn.textContent = '⏸'; // Reset button icon
+    
+    // Apply Pomodoro background settings
+    applyPomodoroBackgroundSettings();
+    
+    console.log('Pomodoro settings applied:', { 
+      focus: focusMinutes, 
+      break: breakMinutes, 
+      mode: 'Pomodoro (focus-break cycle)',
+      background: pomodoroBackgroundMode,
+      focusColor: pomodoroBackgroundMode === 'solid-color' ? pomodoroFocusColor : 'N/A',
+      breakColor: pomodoroBackgroundMode === 'solid-color' ? pomodoroBreakColor : 'N/A'
+    });
+    // Restart animation if it had stopped
+    if (!rafId1) {
+      rafId1 = requestAnimationFrame(frame);
+    }
+    // Close the menu after applying
+    menuItems.classList.remove('open');
+  });
+  // Gentle hue drift for gradient stops with randomized starting colors
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+  const stops = [
+    { el: document.getElementById('s0'), hue: rand(0, 360), sat: 75, lit: 55, speed: 0.004 },
+    { el: document.getElementById('s1'), hue: rand(0, 360), sat: 80, lit: 62, speed: -0.006 },
+    { el: document.getElementById('s2'), hue: rand(0, 360), sat: 75, lit: 58, speed: 0.005 }
+  ];
+
+  // Animate turbulence parameters for organic flow
+  const turb = document.getElementById('turb');
+  let t = 0;
+
+  function frame(now){
+    const dt = now - last; last = now; t += dt;
+    
+    // Calculate elapsed time (use accumulated paused time)
+    let elapsed = isPaused ? pausedElapsed : (now - startTime + pausedElapsed);
+    
+    // If we just started (pausedElapsed is 0 and not paused), ensure we start from exactly 0
+    if (!isPaused && pausedElapsed === 0 && (now - startTime) < 100) {
+      // Very early in the timer (first 100ms), ensure clean start
+      elapsed = now - startTime;
+    }
+    
+    let remaining = Math.max(0, timerDurationMs - elapsed);
+    
+    // Timer logic (only when not paused)
+    if (!isPaused) {
+      // If timer finished, automatically pause
+      if (remaining <= 0) {
+        // Automatically pause
+        isPaused = true;
+        pausedElapsed = 0; // Reset for new timer
+        pausePlayBtn.textContent = '▶';
+        
+        // Only switch to the other mode if in Pomodoro mode
+        if (isPomodoroMode) {
+          // Switch to the other mode (focus <-> break)
+          isFocusMode = !isFocusMode;
+          timerDurationMs = isFocusMode ? focusDurationMs : breakDurationMs;
+          startTime = performance.now();
+          last = startTime;
+          remaining = timerDurationMs; // Show full time for next timer, but paused
+          
+          // Update background color if in Pomodoro solid color mode
+          if (pomodoroBackgroundMode === 'solid-color') {
+            document.body.style.background = isFocusMode ? pomodoroFocusColor : pomodoroBreakColor;
+          }
+          
+          console.log('Timer finished. Auto-paused. Next mode:', isFocusMode ? 'Focus' : 'Break');
+        } else {
+          // Simple timer mode - just pause, don't switch modes
+          console.log('Timer finished. Auto-paused. (Simple timer mode - no cycle)');
+        }
+      }
+    }
+    
+    // Always update timer display - use floor instead of ceil to prevent flicker
+    const totalSeconds = Math.floor(remaining / 1000);
+    const clamped = Math.max(0, totalSeconds);
+    const mm = Math.floor(clamped / 60);
+    const ss = clamped % 60;
+    timerEl.textContent = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+
+    // Update gradient colors and turbulence only if liquid glass mode
+    // Check both timer background mode and Pomodoro background mode
+    const shouldShowLiquidGlass = isPomodoroMode 
+      ? (pomodoroBackgroundMode === 'liquid-glass')
+      : (backgroundMode === 'liquid-glass');
+    
+    if (shouldShowLiquidGlass) {
+      // Update gradient colors (always animate when liquid glass is active)
+      for (const s of stops){
+        s.hue = (s.hue + s.speed * dt) % 360;
+        s.el.setAttribute('stop-color', hslToHex(s.hue, s.sat, s.lit));
+      }
+
+      // Morph turbulence for a flowing refraction (always animate when liquid glass is active)
+      const bfX = 0.0045 + 0.0015 * Math.sin(t * 0.0004);
+      const bfY = 0.0085 + 0.0020 * Math.cos(t * 0.0003);
+      const seed = 2 + Math.sin(t * 0.0002) * 0.5;
+      turb.setAttribute('baseFrequency', bfX.toFixed(5) + ' ' + bfY.toFixed(5));
+      turb.setAttribute('seed', seed.toFixed(3));
+    }
+
+    // Always continue the animation
+    rafId1 = requestAnimationFrame(frame);
+  }
+  rafId1 = requestAnimationFrame(frame);
+
+  // Subtle animated film grain for texture
+  const grain = grainCanvas; // Use the ID reference
+  const gctx = grain.getContext('2d', { alpha: true });
+  function resize(){
+    grain.width = innerWidth; grain.height = innerHeight;
+  }
+  addEventListener('resize', resize); resize();
+  function drawGrain(){
+    // Only animate grain if in liquid glass mode
+    // Check both timer background mode and Pomodoro background mode
+    const shouldShowLiquidGlass = isPomodoroMode 
+      ? (pomodoroBackgroundMode === 'liquid-glass')
+      : (backgroundMode === 'liquid-glass');
+    
+    if (!shouldShowLiquidGlass) {
+      return;
+    }
+    const w = grain.width, h = grain.height;
+    const img = gctx.createImageData(w, h);
+    const data = img.data;
+    for (let i = 0; i < data.length; i += 4){
+      const v = 120 + ((Math.random() * 70) | 0); // 120..190
+      data[i] = data[i+1] = data[i+2] = v; data[i+3] = 18; // low alpha
+    }
+    gctx.putImageData(img, 0, 0);
+    // Continue the grain animation
+    rafId2 = requestAnimationFrame(drawGrain);
+  }
+  rafId2 = requestAnimationFrame(drawGrain);
+
+  // Utils
+  function hslToHex(h, s, l){
+    const a = s * Math.min(l, 100 - l) / 10000;
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      const c = l/100 - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * c).toString(16).padStart(2, '0');
+    };
+    return '#' + f(0) + f(8) + f(4);
+  }
+  
+  // Initialize gradient with random colors
+  for (const s of stops) {
+    s.el.setAttribute('stop-color', hslToHex(s.hue, s.sat, s.lit));
+  }
+})();
+</script>
+</body>
+</html>
+
