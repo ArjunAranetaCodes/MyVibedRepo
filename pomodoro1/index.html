@@ -27,6 +27,9 @@
   .submenu-input::placeholder { color: rgba(232, 246, 255, 0.5); }
   .submenu-button { width: 100%; background: rgba(123, 87, 255, 0.6); border: 1px solid rgba(123, 87, 255, 0.8); border-radius: 6px; padding: 8px; color: #e8f6ff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px; }
   .submenu-button:hover { background: rgba(123, 87, 255, 0.8); }
+  /* Force black dropdown menu and selection background */
+  select.submenu-input { background: #000000 !important; color: #e8f6ff; }
+  #backgroundType option, #pomodoroBackgroundType option { background: #000000; color: #e8f6ff; }
   
   /* Pause/Play button */
   .timer-controls { position: fixed; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 15; }
@@ -74,9 +77,15 @@
           </select>
           <div id="pomodoroColorPickerContainer" style="display: none;">
             <label class="submenu-label" for="focusColorPicker">Focus Color</label>
-            <input type="color" id="focusColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px; margin-bottom: 8px;" />
+            <div style="display:flex; gap:8px; align-items:center; margin-bottom: 8px;">
+              <input type="color" id="focusColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px; margin: 0;" />
+              <button class="submenu-button" id="setFocusColorBtn" style="width:auto; white-space:nowrap; margin: 0;">Set</button>
+            </div>
             <label class="submenu-label" for="breakColorPicker">Break Color</label>
-            <input type="color" id="breakColorPicker" class="submenu-input" value="#1a2f3a" style="height: 40px; cursor: pointer; padding: 4px; margin-bottom: 8px;" />
+            <div style="display:flex; gap:8px; align-items:center;">
+              <input type="color" id="breakColorPicker" class="submenu-input" value="#1a2f3a" style="height: 40px; cursor: pointer; padding: 4px; margin: 0;" />
+              <button class="submenu-button" id="setBreakColorBtn" style="width:auto; white-space:nowrap; margin: 0;">Set</button>
+            </div>
           </div>
           <button class="submenu-button" id="applyPomodoroBtn">Apply</button>
         </div>
@@ -148,6 +157,26 @@
       colorPickerContainer.style.display = 'none';
     }
   });
+  // Keep timer color picker visible while hovering submenu; hide with slight delay on leave
+  let timerPickerHideTimeout = null;
+  const timerSubmenu = applyTimerBtn.closest('.submenu');
+  function showTimerPickerIfNeeded() {
+    if (backgroundType.value === 'solid-color') {
+      colorPickerContainer.style.display = 'block';
+    }
+  }
+  function hideTimerPicker() {
+    colorPickerContainer.style.display = 'none';
+  }
+  if (timerSubmenu) {
+    timerSubmenu.addEventListener('mouseenter', function() {
+      if (timerPickerHideTimeout) { clearTimeout(timerPickerHideTimeout); timerPickerHideTimeout = null; }
+      showTimerPickerIfNeeded();
+    });
+    timerSubmenu.addEventListener('mouseleave', function() {
+      timerPickerHideTimeout = setTimeout(hideTimerPicker, 200);
+    });
+  }
   
   // Pomodoro settings
   const focusInput = document.getElementById('focusInput');
@@ -157,6 +186,8 @@
   const focusColorPicker = document.getElementById('focusColorPicker');
   const breakColorPicker = document.getElementById('breakColorPicker');
   const pomodoroColorPickerContainer = document.getElementById('pomodoroColorPickerContainer');
+  const setFocusColorBtn = document.getElementById('setFocusColorBtn');
+  const setBreakColorBtn = document.getElementById('setBreakColorBtn');
   
   // Pomodoro background state
   let pomodoroBackgroundMode = 'liquid-glass'; // 'liquid-glass' or 'solid-color'
@@ -169,6 +200,42 @@
       pomodoroColorPickerContainer.style.display = 'block';
     } else {
       pomodoroColorPickerContainer.style.display = 'none';
+    }
+  });
+  // Keep pomodoro color pickers visible while hovering submenu; hide with slight delay on leave
+  let pomodoroPickerHideTimeout = null;
+  const pomodoroSubmenu = applyPomodoroBtn.closest('.submenu');
+  function showPomodoroPickersIfNeeded() {
+    if (pomodoroBackgroundType.value === 'solid-color') {
+      pomodoroColorPickerContainer.style.display = 'block';
+    }
+  }
+  function hidePomodoroPickers() {
+    pomodoroColorPickerContainer.style.display = 'none';
+  }
+  if (pomodoroSubmenu) {
+    pomodoroSubmenu.addEventListener('mouseenter', function() {
+      if (pomodoroPickerHideTimeout) { clearTimeout(pomodoroPickerHideTimeout); pomodoroPickerHideTimeout = null; }
+      showPomodoroPickersIfNeeded();
+    });
+    pomodoroSubmenu.addEventListener('mouseleave', function() {
+      pomodoroPickerHideTimeout = setTimeout(hidePomodoroPickers, 200);
+    });
+  }
+
+  // Set buttons for Pomodoro colors
+  setFocusColorBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    pomodoroFocusColor = focusColorPicker.value;
+    if (pomodoroBackgroundMode === 'solid-color' && isFocusMode) {
+      document.body.style.background = pomodoroFocusColor;
+    }
+  });
+  setBreakColorBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    pomodoroBreakColor = breakColorPicker.value;
+    if (pomodoroBackgroundMode === 'solid-color' && !isFocusMode) {
+      document.body.style.background = pomodoroBreakColor;
     }
   });
   
@@ -188,6 +255,7 @@
   let isPaused = true; // Start paused when page loads
   let pausedElapsed = 0; // Accumulated elapsed time when paused
   let pauseStartTime = 0;
+  const baseTitle = document.title;
   
   // Pause/Play button
   const pausePlayBtn = document.getElementById('pausePlayBtn');
@@ -413,6 +481,10 @@
     const mm = Math.floor(clamped / 60);
     const ss = clamped % 60;
     timerEl.textContent = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+    // Update document title with timer and mode
+    const modeLabel = isPomodoroMode ? (isFocusMode ? 'Focus' : 'Break') : 'Timer';
+    const statusIcon = isPaused ? '⏸' : '▶';
+    document.title = `${statusIcon} ${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} • ${modeLabel}`;
 
     // Update gradient colors and turbulence only if liquid glass mode
     // Check both timer background mode and Pomodoro background mode
