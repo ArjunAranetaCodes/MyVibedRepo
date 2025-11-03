@@ -1,0 +1,45 @@
+.routine-card {
+  display: flex;
+  flex-direction: column;
+}
+
+.routine-stats {
+  display: flex;
+  gap: 2rem;
+  margin: 1rem 0;
+  padding: 1rem 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.routine-exercises-preview {
+  margin: 1rem 0;
+}
+
+.routine-exercises-preview ul {
+  list-style: none;
+  padding-left: 0;
+  margin-top: 0.5rem;
+}
+
+.routine-exercises-preview li {
+  padding: 0.25rem 0;
+  color: var(--text-secondary);
+}
+
