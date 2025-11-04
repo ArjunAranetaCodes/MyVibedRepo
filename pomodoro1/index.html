@@ -257,6 +257,23 @@
   let pauseStartTime = 0;
   const baseTitle = document.title;
   
+  // Background-safe time/title helpers
+  function computeRemainingMs(now){
+    const current = now != null ? now : performance.now();
+    const elapsed = isPaused ? pausedElapsed : (current - startTime + pausedElapsed);
+    return Math.max(0, timerDurationMs - elapsed);
+  }
+  function updateTitleFromRemaining(remainingMs){
+    const remaining = remainingMs != null ? remainingMs : computeRemainingMs();
+    const totalSeconds = Math.floor(remaining / 1000);
+    const clamped = Math.max(0, totalSeconds);
+    const mm = Math.floor(clamped / 60);
+    const ss = clamped % 60;
+    const modeLabel = isPomodoroMode ? (isFocusMode ? 'Focus' : 'Break') : 'Timer';
+    const statusIcon = isPaused ? '⏸' : '▶';
+    document.title = `${statusIcon} ${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} • ${modeLabel}`;
+  }
+  
   // Pause/Play button
   const pausePlayBtn = document.getElementById('pausePlayBtn');
   pausePlayBtn.addEventListener('click', function() {
@@ -481,10 +498,8 @@
     const mm = Math.floor(clamped / 60);
     const ss = clamped % 60;
     timerEl.textContent = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-    // Update document title with timer and mode
-    const modeLabel = isPomodoroMode ? (isFocusMode ? 'Focus' : 'Break') : 'Timer';
-    const statusIcon = isPaused ? '⏸' : '▶';
-    document.title = `${statusIcon} ${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')} • ${modeLabel}`;
+    // Update document title with timer and mode (rAF path)
+    updateTitleFromRemaining(remaining);
 
     // Update gradient colors and turbulence only if liquid glass mode
     // Check both timer background mode and Pomodoro background mode
@@ -511,6 +526,16 @@
     rafId1 = requestAnimationFrame(frame);
   }
   rafId1 = requestAnimationFrame(frame);
+
+  // Keep document title updating while tab is inactive (rAF is throttled/paused)
+  setInterval(function(){
+    if (document.hidden) {
+      updateTitleFromRemaining();
+    }
+  }, 1000);
+  document.addEventListener('visibilitychange', function(){
+    updateTitleFromRemaining();
+  });
 
   // Subtle animated film grain for texture
   const grain = grainCanvas; // Use the ID reference
