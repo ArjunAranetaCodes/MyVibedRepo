@@ -13,6 +13,7 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - **Automatic Color Transitions**: Background color switches automatically when transitioning between Focus and Break
 - **Film Grain Overlay**: Subtle animated film grain texture for added depth and visual interest (only in liquid glass mode)
 - **Large Timer Display**: Prominent, centered timer display with white text and stroke effects for maximum readability
+- **Tab Title Timer**: Browser tab title shows live time, play/pause state, and mode (Focus/Break)
 - **Glass Morphism UI**: Frosted glass effect on menu and controls using backdrop blur
 
 ### ⏱️ Timer Features
@@ -54,6 +55,7 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - **Color Picker**: Appears when "Solid Color" is selected
   - Choose any color for the background
   - Default: Dark blue-black (#0b0f14)
+- **Dropdown Styling**: Background dropdown uses a black menu/selection for clarity
 - **Apply Button**: Applies the new settings and resets the timer
   - Sets timer to simple focus-only mode (no Pomodoro cycling)
   - Applies selected background style
@@ -73,6 +75,10 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - **Break Color Picker**: Appears when "Solid Color" is selected
   - Choose background color for Break sessions
   - Default: Darker blue-gray (#1a2f3a)
+- **Set Buttons**: Buttons to the right of each color picker
+  - "Set" next to Focus color instantly applies the chosen Focus color (when in Focus mode and Solid Color is selected)
+  - "Set" next to Break color instantly applies the chosen Break color (when in Break mode and Solid Color is selected)
+  - These do not reset timers or close the menu
 - **Apply Button**: Applies the new settings and resets the timer
   - Enables Pomodoro mode (Focus/Break cycling)
   - Applies selected background style and colors
@@ -120,6 +126,7 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - **Smooth Transitions**: All UI changes use CSS transitions
 - **Visual Feedback**: Hover states and active states for all interactive elements
 - **Accessible Controls**: Large, clearly visible buttons and inputs
+- **Color Picker Hover Behavior**: Color pickers stay visible while hovering their submenu and hide shortly after the cursor leaves, preventing accidental closing when moving to buttons
 
 #### Timer Workflow (Pomodoro Mode)
 1. **Initialization**: Timer starts paused or with default settings
@@ -172,7 +179,7 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 ### 🚀 Usage
 
 #### Using Pomodoro Mode
-1. Open `liquid-glass-pomodoro.html` in a modern web browser
+1. Open `index.html` in a modern web browser
 2. Click the menu button (☰) in the top-left corner
 3. Hover over "Pomodoro" (🍅) to reveal settings
 4. Enter desired Focus and Break times (in minutes)
@@ -180,11 +187,12 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
    - **Liquid Glass**: Animated gradient background (default)
    - **Solid Color**: Choose individual colors for Focus and Break sessions
 6. If using solid colors, select your preferred Focus and Break colors
-7. Click "Apply" to start with new settings
-8. Click the play/pause button (⏸/▶) below the timer to control the timer
+7. Optionally click "Set" next to a color to apply it immediately without resetting the timer
+8. Click "Apply" to start with new settings (resets timer and enables cycling)
+9. Click the play/pause button (⏸/▶) below the timer to control the timer
 
 #### Using Simple Timer Mode
-1. Open `liquid-glass-pomodoro.html` in a modern web browser
+1. Open `index.html` in a modern web browser
 2. Click the menu button (☰) in the top-left corner
 3. Hover over "Timer Settings" (⏱️) to reveal settings
 4. Enter desired timer duration (in minutes)
@@ -205,6 +213,8 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - Pomodoro Settings enables Focus/Break cycling with automatic mode switching
 - Timer state and background preferences are maintained in memory (resets on page refresh)
 - Each mode (Timer Settings vs Pomodoro) has independent background color settings
+- The browser tab title reflects the live timer, play/pause state, and current mode
+- Background dropdowns use a black background for the menu and selection
 
 ---
 
