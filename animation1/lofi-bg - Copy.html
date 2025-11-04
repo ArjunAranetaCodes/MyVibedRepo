@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lofi Gaussian Pulses</title>
+<style>
+  html, body { height: 100%; margin: 0; background: #0c0f11; overflow: hidden; }
+  canvas#field { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+</style>
+</head>
+<body>
+  <canvas id="field"></canvas>
+
+<script>
+(function(){
+  const canvas = document.getElementById('field');
+  const ctx = canvas.getContext('2d');
+
+  // Config: tweak to taste
+  const NUM_CIRCLES = 80; // density
+  const MIN_R = 40;       // px
+  const MAX_R = 180;      // px
+  const PULSE_AMPL = 0.22; // ±22% radius
+  const PULSE_SPEED_MIN = 0.0003; // radians/ms
+  const PULSE_SPEED_MAX = 0.0010;
+  const DRIFT_SPEED = 0.008; // px/ms
+  const BASE_ALPHA_MIN = 0.05; // center brightness
+  const BASE_ALPHA_MAX = 0.18;
+  const TRAIL_ALPHA = 0.06; // frame fade for smoother motion (0 disables)
+
+  let width = 0, height = 0, dpr = 1;
+  function resize(){
+    dpr = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+    width = Math.floor(innerWidth);
+    height = Math.floor(innerHeight);
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  addEventListener('resize', resize);
+  resize();
+
+  function rand(min, max){ return Math.random() * (max - min) + min; }
+  function choiceSign(){ return Math.random() < 0.5 ? -1 : 1; }
+
+  const circles = Array.from({length: NUM_CIRCLES}, () => {
+    const r = rand(MIN_R, MAX_R);
+    return {
+      x: rand(0, width),
+      y: rand(0, height),
+      rBase: r,
+      phase: Math.random() * Math.PI * 2,
+      pulseSpeed: rand(PULSE_SPEED_MIN, PULSE_SPEED_MAX),
+      vx: choiceSign() * rand(0, DRIFT_SPEED),
+      vy: choiceSign() * rand(0, DRIFT_SPEED),
+      alpha: rand(BASE_ALPHA_MIN, BASE_ALPHA_MAX)
+    };
+  });
+
+  let last = performance.now();
+  function frame(now){
+    const dt = now - last; last = now;
+
+    // Fade previous frame for soft trails
+    if (TRAIL_ALPHA > 0){
+      ctx.fillStyle = `rgba(12,15,17,${TRAIL_ALPHA})`;
+      ctx.fillRect(0, 0, width, height);
+    } else {
+      ctx.clearRect(0, 0, width, height);
+    }
+
+    ctx.globalCompositeOperation = 'screen';
+
+    for (const c of circles){
+      // Pulsate
+      c.phase += c.pulseSpeed * dt;
+      const r = c.rBase * (1 + PULSE_AMPL * Math.sin(c.phase));
+
+      // Drift
+      c.x += c.vx * dt; c.y += c.vy * dt;
+      // Wrap around edges
+      if (c.x < -r) c.x = width + r;
+      if (c.x > width + r) c.x = -r;
+      if (c.y < -r) c.y = height + r;
+      if (c.y > height + r) c.y = -r;
+
+      // Draw Gaussian-like radial gradient (white center to transparent)
+      const grad = ctx.createRadialGradient(c.x, c.y, 0, c.x, c.y, r);
+      grad.addColorStop(0.0, `rgba(255,255,255,${c.alpha})`);
+      grad.addColorStop(0.6, `rgba(255,255,255,${c.alpha * 0.35})`);
+      grad.addColorStop(1.0, 'rgba(255,255,255,0)');
+
+      ctx.fillStyle = grad;
+      ctx.beginPath();
+      ctx.arc(c.x, c.y, r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.globalCompositeOperation = 'source-over';
+    requestAnimationFrame(frame);
+  }
+  requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
