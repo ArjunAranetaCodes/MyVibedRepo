@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Liquid Glass</title>
+<style>
+  html, body { height: 100%; margin: 0; overflow: hidden; background: #0b0f14; }
+  svg { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+  /* Optional film softness */
+  .grain { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.05; mix-blend-mode: soft-light; }
+</style>
+</head>
+<body>
+  <div id="timer" style="position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;color:#ffffff;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:700;letter-spacing:0.06em;background:transparent;z-index:10;line-height:1;-webkit-text-stroke:2px #bbbbbb;text-stroke:2px #bbbbbb;margin-top:-80px;">01:00</div>
+  <!-- Fullscreen SVG with gradient content distorted by turbulence -->
+  <svg viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
+    <defs>
+      <!-- Animated gradient; colors will be shifted via JS (HSL drift) -->
+      <linearGradient id="lg" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop id="s0" offset="0%" stop-color="#3a6ff0" />
+        <stop id="s1" offset="50%" stop-color="#7ce3ff" />
+        <stop id="s2" offset="100%" stop-color="#7bffb1" />
+      </linearGradient>
+
+      <!-- Liquid glass filter: noise + displacement + slight blur -->
+      <filter id="liquid" x="-20%" y="-20%" width="140%" height="140%">
+        <feTurbulence id="turb" type="turbulence" baseFrequency="0.005 0.009" numOctaves="2" seed="2" result="noise" />
+        <feDisplacementMap in="SourceGraphic" in2="noise" scale="55" xChannelSelector="R" yChannelSelector="G" />
+        <feGaussianBlur stdDeviation="0.8" />
+      </filter>
+    </defs>
+
+    <!-- Content to distort: a rect filled with our gradient -->
+    <g filter="url(#liquid)">
+      <rect x="-50" y="-50" width="1100" height="1100" fill="url(#lg)" />
+    </g>
+  </svg>
+  <canvas class="grain"></canvas>
+
+<script>
+(function(){
+  const TIMER_MINUTES = 30; // CHANGE THIS to set timer minutes
+  const TIMER_SECONDS = 10; // CHANGE THIS to set timer seconds
+  const DURATION_MS = (TIMER_MINUTES * 60 + TIMER_SECONDS) * 1000;
+  const TIMER_FONT_SIZE = 300; // px - CHANGE THIS VALUE to modify timer font size
+  const timerEl = document.getElementById('timer');
+  timerEl.style.fontSize = TIMER_FONT_SIZE + 'px';
+  const startTime = performance.now();
+  let rafId1 = 0, rafId2 = 0;
+  // Gentle hue drift for gradient stops with randomized starting colors
+  function rand(min, max) { return Math.random() * (max - min) + min; }
+  const stops = [
+    { el: document.getElementById('s0'), hue: rand(0, 360), sat: 75, lit: 55, speed: 0.004 },
+    { el: document.getElementById('s1'), hue: rand(0, 360), sat: 80, lit: 62, speed: -0.006 },
+    { el: document.getElementById('s2'), hue: rand(0, 360), sat: 75, lit: 58, speed: 0.005 }
+  ];
+
+  // Animate turbulence parameters for organic flow
+  const turb = document.getElementById('turb');
+  let t = 0;
+
+  let last = startTime;
+  function frame(now){
+    const dt = now - last; last = now; t += dt;
+    const elapsed = now - startTime;
+    const remaining = Math.max(0, DURATION_MS - elapsed);
+    const totalSeconds = Math.ceil(remaining / 1000);
+    const clamped = Math.max(0, totalSeconds);
+    const mm = Math.floor(clamped / 60);
+    const ss = clamped % 60;
+    timerEl.textContent = `${String(mm).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+
+    // Update gradient colors
+    for (const s of stops){
+      s.hue = (s.hue + s.speed * dt) % 360;
+      s.el.setAttribute('stop-color', hslToHex(s.hue, s.sat, s.lit));
+    }
+
+    // Morph turbulence for a flowing refraction
+    const bfX = 0.0045 + 0.0015 * Math.sin(t * 0.0004);
+    const bfY = 0.0085 + 0.0020 * Math.cos(t * 0.0003);
+    const seed = 2 + Math.sin(t * 0.0002) * 0.5;
+    turb.setAttribute('baseFrequency', bfX.toFixed(5) + ' ' + bfY.toFixed(5));
+    turb.setAttribute('seed', seed.toFixed(3));
+
+    if (remaining > 0) {
+      rafId1 = requestAnimationFrame(frame);
+    }
+  }
+  rafId1 = requestAnimationFrame(frame);
+
+  // Subtle animated film grain for texture
+  const grain = document.querySelector('canvas.grain');
+  const gctx = grain.getContext('2d', { alpha: true });
+  function resize(){
+    grain.width = innerWidth; grain.height = innerHeight;
+  }
+  addEventListener('resize', resize); resize();
+  function drawGrain(){
+    const w = grain.width, h = grain.height;
+    const img = gctx.createImageData(w, h);
+    const data = img.data;
+    for (let i = 0; i < data.length; i += 4){
+      const v = 120 + ((Math.random() * 70) | 0); // 120..190
+      data[i] = data[i+1] = data[i+2] = v; data[i+3] = 18; // low alpha
+    }
+    gctx.putImageData(img, 0, 0);
+    const now = performance.now();
+    if (now - startTime < DURATION_MS) {
+      rafId2 = requestAnimationFrame(drawGrain);
+    }
+  }
+  rafId2 = requestAnimationFrame(drawGrain);
+
+  // Utils
+  function hslToHex(h, s, l){
+    const a = s * Math.min(l, 100 - l) / 10000;
+    const f = n => {
+      const k = (n + h / 30) % 12;
+      const c = l/100 - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * c).toString(16).padStart(2, '0');
+    };
+    return '#' + f(0) + f(8) + f(4);
+  }
+  
+  // Initialize gradient with random colors
+  for (const s of stops) {
+    s.el.setAttribute('stop-color', hslToHex(s.hue, s.sat, s.lit));
+  }
+})();
+</script>
+</body>
+</html>
+
