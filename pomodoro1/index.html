@@ -32,9 +32,12 @@
   #backgroundType option, #pomodoroBackgroundType option { background: #000000; color: #e8f6ff; }
   
   /* Pause/Play button */
-  .timer-controls { position: fixed; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 15; }
+  .timer-controls { position: fixed; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 15; display: flex; align-items: center; gap: 20px; }
   .pause-play-btn { width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 32px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); transition: all 0.3s ease; line-height: 1; padding: 0;  padding-bottom: 2px;  text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3); }
   .pause-play-btn:hover { background: rgba(0, 0, 0, 0.7); border-color: rgba(255, 255, 255, 0.5); transform: scale(1.1); }
+  .mode-switch-btn { width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 24px; cursor: pointer; display: none; align-items: center; justify-content: center; backdrop-filter: blur(10px); transition: all 0.3s ease; line-height: 1; padding: 0; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3); }
+  .mode-switch-btn:hover { background: rgba(0, 0, 0, 0.7); border-color: rgba(255, 255, 255, 0.5); transform: scale(1.1); }
+  .mode-switch-btn.visible { display: flex; }
 </style>
 </head>
 <body>
@@ -95,7 +98,11 @@
   <div id="timer" style="position:fixed;top:0;left:0;right:0;bottom:0;display:flex;align-items:center;justify-content:center;color:#ffffff;font-family:system-ui,Segoe UI,Roboto,Helvetica,Arial,sans-serif;font-weight:700;letter-spacing:0.06em;background:transparent;z-index:10;line-height:1;-webkit-text-stroke:2px #bbbbbb;text-stroke:2px #bbbbbb;margin-top:-80px;">01:00</div>
   <div class="timer-controls">
     <button class="pause-play-btn" id="pausePlayBtn">▶</button>
+    <button class="mode-switch-btn" id="modeSwitchBtn" title="Switch between Focus and Break">🔄</button>
   </div>
+  <audio id="timerSound" preload="auto">
+    <source src="birds-singing-in-tree.wav" type="audio/wav">
+  </audio>
   <!-- Fullscreen SVG with gradient content distorted by turbulence -->
   <svg id="liquidGlassBg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -256,6 +263,8 @@
   let pausedElapsed = 0; // Accumulated elapsed time when paused
   let pauseStartTime = 0;
   const baseTitle = document.title;
+  const timerSound = document.getElementById('timerSound');
+  let hasPlayedSound = false; // Track if sound has been played for current timer completion
   
   // Background-safe time/title helpers
   function computeRemainingMs(now){
@@ -296,6 +305,42 @@
     }
   });
   
+  // Mode Switch button (Focus/Break toggle)
+  const modeSwitchBtn = document.getElementById('modeSwitchBtn');
+  function updateModeSwitchVisibility() {
+    if (isPomodoroMode) {
+      modeSwitchBtn.classList.add('visible');
+    } else {
+      modeSwitchBtn.classList.remove('visible');
+    }
+  }
+  function switchMode() {
+    if (!isPomodoroMode) return; // Only switch in Pomodoro mode
+    
+    // Toggle between focus and break
+    isFocusMode = !isFocusMode;
+    timerDurationMs = isFocusMode ? focusDurationMs : breakDurationMs;
+    
+    // Reset timer
+    startTime = performance.now();
+    last = startTime;
+    pausedElapsed = 0;
+    isPaused = true; // Pause after switching
+    pausePlayBtn.textContent = '▶';
+    hasPlayedSound = false; // Reset sound flag for new timer
+    
+    // Update background color if in Pomodoro solid color mode
+    if (pomodoroBackgroundMode === 'solid-color') {
+      document.body.style.background = isFocusMode ? pomodoroFocusColor : pomodoroBreakColor;
+    }
+    
+    console.log('Mode switched to:', isFocusMode ? 'Focus' : 'Break');
+  }
+  modeSwitchBtn.addEventListener('click', switchMode);
+  
+  // Initialize mode switch button visibility
+  updateModeSwitchVisibility();
+  
   // Function to apply background settings
   function applyBackgroundSettings() {
     backgroundMode = backgroundType.value;
@@ -335,6 +380,10 @@
     pausedElapsed = 0; // Reset paused time
     isPaused = false; // Reset pause state
     pausePlayBtn.textContent = '⏸'; // Reset button icon
+    hasPlayedSound = false; // Reset sound flag for new timer
+    
+    // Update mode switch button visibility
+    updateModeSwitchVisibility();
     
     // Apply background settings (only for simple timer mode)
     applyBackgroundSettings();
@@ -416,6 +465,10 @@
     pausedElapsed = 0; // Reset paused time
     isPaused = false; // Reset pause state
     pausePlayBtn.textContent = '⏸'; // Reset button icon
+    hasPlayedSound = false; // Reset sound flag for new timer
+    
+    // Update mode switch button visibility
+    updateModeSwitchVisibility();
     
     // Apply Pomodoro background settings
     applyPomodoroBackgroundSettings();
@@ -465,6 +518,13 @@
     if (!isPaused) {
       // If timer finished, automatically pause
       if (remaining <= 0) {
+        // Play sound if not already played for this completion
+        if (!hasPlayedSound) {
+          timerSound.currentTime = 0; // Reset to beginning
+          timerSound.play().catch(err => console.log('Could not play sound:', err));
+          hasPlayedSound = true;
+        }
+        
         // Automatically pause
         isPaused = true;
         pausedElapsed = 0; // Reset for new timer
@@ -478,6 +538,7 @@
           startTime = performance.now();
           last = startTime;
           remaining = timerDurationMs; // Show full time for next timer, but paused
+          hasPlayedSound = false; // Reset sound flag for new timer
           
           // Update background color if in Pomodoro solid color mode
           if (pomodoroBackgroundMode === 'solid-color') {
@@ -528,13 +589,76 @@
   rafId1 = requestAnimationFrame(frame);
 
   // Keep document title updating while tab is inactive (rAF is throttled/paused)
+  // Also check for timer completion and play sound even when tab is inactive
   setInterval(function(){
     if (document.hidden) {
       updateTitleFromRemaining();
     }
+    
+    // Check if timer has finished (even when tab is inactive)
+    if (!isPaused) {
+      const now = performance.now();
+      const elapsed = now - startTime + pausedElapsed;
+      const remaining = Math.max(0, timerDurationMs - elapsed);
+      
+      if (remaining <= 0 && !hasPlayedSound) {
+        // Timer finished - play sound even if tab is inactive
+        timerSound.currentTime = 0;
+        timerSound.play().catch(err => console.log('Could not play sound:', err));
+        hasPlayedSound = true;
+        
+        // Auto-pause and handle mode switching
+        isPaused = true;
+        pausedElapsed = 0;
+        pausePlayBtn.textContent = '▶';
+        
+        if (isPomodoroMode) {
+          isFocusMode = !isFocusMode;
+          timerDurationMs = isFocusMode ? focusDurationMs : breakDurationMs;
+          startTime = performance.now();
+          last = startTime;
+          hasPlayedSound = false; // Reset for next timer
+          
+          if (pomodoroBackgroundMode === 'solid-color') {
+            document.body.style.background = isFocusMode ? pomodoroFocusColor : pomodoroBreakColor;
+          }
+        }
+      }
+    }
   }, 1000);
   document.addEventListener('visibilitychange', function(){
     updateTitleFromRemaining();
+    
+    // When tab becomes visible, check if timer finished while hidden
+    if (!document.hidden && !isPaused) {
+      const now = performance.now();
+      const elapsed = now - startTime + pausedElapsed;
+      const remaining = Math.max(0, timerDurationMs - elapsed);
+      
+      if (remaining <= 0 && !hasPlayedSound) {
+        // Timer finished while tab was hidden - play sound now
+        timerSound.currentTime = 0;
+        timerSound.play().catch(err => console.log('Could not play sound:', err));
+        hasPlayedSound = true;
+        
+        // Auto-pause and handle mode switching
+        isPaused = true;
+        pausedElapsed = 0;
+        pausePlayBtn.textContent = '▶';
+        
+        if (isPomodoroMode) {
+          isFocusMode = !isFocusMode;
+          timerDurationMs = isFocusMode ? focusDurationMs : breakDurationMs;
+          startTime = performance.now();
+          last = startTime;
+          hasPlayedSound = false; // Reset for next timer
+          
+          if (pomodoroBackgroundMode === 'solid-color') {
+            document.body.style.background = isFocusMode ? pomodoroFocusColor : pomodoroBreakColor;
+          }
+        }
+      }
+    }
   });
 
   // Subtle animated film grain for texture
