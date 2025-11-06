@@ -26,7 +26,10 @@
   let currentProfileName = null;
   let pageClickHandler = null;
   let fieldChangeHandler = null;
+  let fieldInputHandler = null;
   let toolbarEl = null;
+  const typingThrottleMs = 500;
+  const lastTypingBySelector = Object.create(null);
 
   function getElementSelector(el) {
     try {
@@ -162,6 +165,26 @@
       } catch (_) {}
     };
     document.addEventListener('change', fieldChangeHandler, true);
+
+    fieldInputHandler = function(e) {
+      try {
+        const el = e.target; if (!el) return;
+        const tag = (el.tagName || '').toLowerCase();
+        if (tag !== 'input' && tag !== 'textarea') return;
+        const type = (el.type || '').toLowerCase();
+        if (type === 'checkbox' || type === 'radio') return; // handled by change
+        const selector = getElementSelector(el);
+        const now = Date.now();
+        const last = lastTypingBySelector[selector] || 0;
+        if (now - last < typingThrottleMs) return; // throttle
+        lastTypingBySelector[selector] = now;
+        const name = el.name || undefined;
+        const value = el.value ?? '';
+        const entry = { type: 'input-typing', inputType: type || tag, name, value, selector, pageUrl: location.href, pageTitle: document.title, timestamp: new Date().toISOString() };
+        persistEntry(entry);
+      } catch (_) {}
+    };
+    document.addEventListener('input', fieldInputHandler, true);
   }
 
   function stopRecording() {
@@ -169,6 +192,7 @@
     recording = false;
     if (pageClickHandler) { document.removeEventListener('click', pageClickHandler, true); pageClickHandler = null; }
     if (fieldChangeHandler) { document.removeEventListener('change', fieldChangeHandler, true); fieldChangeHandler = null; }
+    if (fieldInputHandler) { document.removeEventListener('input', fieldInputHandler, true); fieldInputHandler = null; }
     destroyToolbar();
   }
 
@@ -208,8 +232,8 @@
     let applied = 0;
     const latestByKey = new Map();
     for (const e of entries) {
-      if (e.type !== 'input-change') continue;
-      const key = e.selector || `${e.inputType}|${e.name||''}|${e.value||''}`;
+      if (e.type !== 'input-change' && e.type !== 'input-typing') continue;
+      const key = e.selector || `${e.inputType}|${e.name||''}`;
       latestByKey.set(key, e);
     }
     for (const e of latestByKey.values()) {
