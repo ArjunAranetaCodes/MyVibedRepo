@@ -46,8 +46,8 @@ document.addEventListener('DOMContentLoaded', function() {
           callback && callback({ ok: false, error: err.message });
         } else {
           callback && callback({ ok: true, response });
-        }
-      });
+    }
+  });
     });
   }
 
@@ -118,7 +118,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateProfileSelect(updated);
                 if (profileNameInput && profileNameInput.value === name) profileNameInput.value = '';
                 updateStatus('Case deleted', 'success');
-              });
+      });
             });
           });
         });
@@ -181,12 +181,12 @@ document.addEventListener('DOMContentLoaded', function() {
   highlightTextBtn?.addEventListener('click', function() {
     sendToActiveTab({ action: 'highlightText' }, function(res) {
       if (res && res.ok && res.response && res.response.success) {
-        updateStatus('Text highlighted!', 'success');
+          updateStatus('Text highlighted!', 'success');
       } else if (res && !res.ok) {
         // already handled in helper
-      } else {
-        updateStatus('No text selected or error occurred', 'error');
-      }
+        } else {
+          updateStatus('No text selected or error occurred', 'error');
+        }
     });
   });
 
