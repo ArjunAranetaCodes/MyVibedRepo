@@ -23,6 +23,41 @@ export const useQuizStore = defineStore('quiz', {
         text: 'What is the largest ocean on Earth?',
         options: ['Atlantic Ocean', 'Indian Ocean', 'Arctic Ocean', 'Pacific Ocean'],
         answer: 3
+      },
+      {
+        text: 'Who wrote the play "Romeo and Juliet"?',
+        options: ['William Shakespeare', 'Charles Dickens', 'Mark Twain', 'Jane Austen'],
+        answer: 0
+      },
+      {
+        text: 'What is the chemical symbol for Gold?',
+        options: ['Ag', 'Au', 'Gd', 'Go'],
+        answer: 1
+      },
+      {
+        text: 'Which language is primarily spoken in Brazil?',
+        options: ['Spanish', 'Portuguese', 'French', 'English'],
+        answer: 1
+      },
+      {
+        text: 'How many continents are there on Earth?',
+        options: ['5', '6', '7', '8'],
+        answer: 2
+      },
+      {
+        text: 'Which gas do plants absorb from the atmosphere?',
+        options: ['Oxygen', 'Nitrogen', 'Carbon Dioxide', 'Helium'],
+        answer: 2
+      },
+      {
+        text: 'What is the square root of 81?',
+        options: ['7', '8', '9', '10'],
+        answer: 2
+      },
+      {
+        text: 'Which country hosted the 2020 Summer Olympics (held in 2021)?',
+        options: ['China', 'Japan', 'Brazil', 'United Kingdom'],
+        answer: 1
       }
     ] as Question[],
     currentQuestionIndex: 0,
