@@ -1,0 +1,66 @@
+.rest-timer {
+  background-color: var(--bg-primary);
+  border: 2px solid var(--primary-color);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin: 1rem 0;
+  text-align: center;
+}
+
+.rest-timer.complete {
+  border-color: var(--success-color);
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+.rest-timer-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.complete-indicator {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.rest-timer-controls {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.timer {
+  text-align: center;
+}
+
+.timer-label {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+}
+
+.timer-display {
+  font-size: 2.5rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  font-family: 'Courier New', monospace;
+}
+
+.timer-default .timer-display {
+  color: var(--text-primary);
+}
+
+.timer-primary .timer-display {
+  color: var(--primary-color);
+}
+
+.timer-warning .timer-display {
+  color: var(--warning-color);
+}
+
+.timer-danger .timer-display {
+  color: var(--danger-color);
+}
+
