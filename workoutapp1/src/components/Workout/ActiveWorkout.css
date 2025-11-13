@@ -1,0 +1,127 @@
+.active-workout {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.active-workout-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.workout-info {
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+}
+
+.exercise-navigation {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid var(--border-color);
+  overflow-x: auto;
+}
+
+.exercise-nav-btn {
+  padding: 0.5rem 1rem;
+  border: 2px solid var(--border-color);
+  background-color: var(--bg-secondary);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  white-space: nowrap;
+}
+
+.exercise-nav-btn:hover {
+  border-color: var(--primary-color);
+  background-color: var(--bg-primary);
+}
+
+.exercise-nav-btn.current {
+  border-color: var(--primary-color);
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.exercise-nav-btn.complete {
+  border-color: var(--success-color);
+}
+
+.current-exercise {
+  margin-bottom: 2rem;
+}
+
+.workout-complete {
+  background-color: rgba(76, 175, 80, 0.1);
+  border: 3px solid var(--success-color);
+  border-radius: 12px;
+  padding: 2rem;
+  text-align: center;
+  margin: 2rem 0;
+}
+
+.workout-complete h2 {
+  margin-bottom: 1rem;
+  color: var(--success-color);
+}
+
+.workout-stats {
+  display: flex;
+  justify-content: center;
+  gap: 3rem;
+  margin: 2rem 0;
+  flex-wrap: wrap;
+}
+
+.workout-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--border-color);
+}
+
+.routine-selection {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.routine-selection h2 {
+  margin-bottom: 1.5rem;
+}
+
+.routine-selection-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .active-workout-header {
+    flex-direction: column;
+  }
+
+  .exercise-navigation {
+    gap: 0.25rem;
+  }
+
+  .exercise-nav-btn {
+    font-size: 0.875rem;
+    padding: 0.4rem 0.8rem;
+  }
+
+  .workout-stats {
+    gap: 1.5rem;
+  }
+
+  .workout-actions {
+    flex-direction: column;
+  }
+}
+
