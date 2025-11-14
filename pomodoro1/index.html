@@ -103,6 +103,9 @@
   <audio id="timerSound" preload="auto">
     <source src="birds-singing-in-tree.wav" type="audio/wav">
   </audio>
+  <audio id="backgroundMusic" preload="auto">
+    <source src="hiphop_playlist/dusty_loops1.mp3" type="audio/mpeg">
+  </audio>
   <!-- Fullscreen SVG with gradient content distorted by turbulence -->
   <svg id="liquidGlassBg" viewBox="0 0 1000 1000" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
     <defs>
@@ -266,6 +269,50 @@
   const timerSound = document.getElementById('timerSound');
   let hasPlayedSound = false; // Track if sound has been played for current timer completion
   
+  // Background music playlist
+  const backgroundMusic = document.getElementById('backgroundMusic');
+  const musicPlaylist = [
+    'hiphop_playlist/dusty_loops1.mp3',
+    'hiphop_playlist/dusty_loops2.mp3'
+  ];
+  let currentMusicIndex = 0;
+  
+  // Function to load and play next song in playlist
+  function playNextMusic() {
+    backgroundMusic.src = musicPlaylist[currentMusicIndex];
+    backgroundMusic.load();
+    if (!isPaused) {
+      backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
+    }
+  }
+  
+  // When a song ends, play the next one
+  backgroundMusic.addEventListener('ended', function() {
+    currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+    playNextMusic();
+  });
+  
+  // Function to control music based on timer state
+  function updateMusicState() {
+    if (!isPaused) {
+      // Timer is running - play music
+      // Ensure music source is set to current playlist item
+      const currentSrc = musicPlaylist[currentMusicIndex];
+      if (!backgroundMusic.src || !backgroundMusic.src.includes(currentSrc)) {
+        backgroundMusic.src = currentSrc;
+        backgroundMusic.load();
+      }
+      if (backgroundMusic.paused) {
+        backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
+      }
+    } else {
+      // Timer is paused - pause music
+      if (!backgroundMusic.paused) {
+        backgroundMusic.pause();
+      }
+    }
+  }
+  
   // Background-safe time/title helpers
   function computeRemainingMs(now){
     const current = now != null ? now : performance.now();
@@ -293,6 +340,8 @@
       pausedElapsed += now - startTime;
       pauseStartTime = now;
       pausePlayBtn.textContent = '▶';
+      // Pause music
+      updateMusicState();
       // Don't stop the frame function, but it will skip timer updates
     } else {
       // Resume: reset startTime to current time
@@ -302,6 +351,8 @@
       // If pausedElapsed is 0, we're starting fresh (after auto-pause) - keep it at 0
       // If pausedElapsed > 0, we're resuming a manual pause - keep the accumulated time
       pausePlayBtn.textContent = '⏸';
+      // Resume music
+      updateMusicState();
     }
   });
   
@@ -333,6 +384,9 @@
     if (pomodoroBackgroundMode === 'solid-color') {
       document.body.style.background = isFocusMode ? pomodoroFocusColor : pomodoroBreakColor;
     }
+    
+    // Pause music when switching modes (since timer is paused)
+    updateMusicState();
     
     console.log('Mode switched to:', isFocusMode ? 'Focus' : 'Break');
   }
@@ -387,6 +441,9 @@
     
     // Apply background settings (only for simple timer mode)
     applyBackgroundSettings();
+    
+    // Start music when timer starts
+    updateMusicState();
     
     console.log('Timer settings applied:', { 
       minutes: timerMinutes, 
@@ -473,6 +530,9 @@
     // Apply Pomodoro background settings
     applyPomodoroBackgroundSettings();
     
+    // Start music when timer starts
+    updateMusicState();
+    
     console.log('Pomodoro settings applied:', { 
       focus: focusMinutes, 
       break: breakMinutes, 
@@ -529,6 +589,8 @@
         isPaused = true;
         pausedElapsed = 0; // Reset for new timer
         pausePlayBtn.textContent = '▶';
+        // Pause music when timer auto-pauses
+        updateMusicState();
         
         // Only switch to the other mode if in Pomodoro mode
         if (isPomodoroMode) {
@@ -611,6 +673,8 @@
         isPaused = true;
         pausedElapsed = 0;
         pausePlayBtn.textContent = '▶';
+        // Pause music when timer auto-pauses
+        updateMusicState();
         
         if (isPomodoroMode) {
           isFocusMode = !isFocusMode;
@@ -645,6 +709,8 @@
         isPaused = true;
         pausedElapsed = 0;
         pausePlayBtn.textContent = '▶';
+        // Pause music when timer auto-pauses
+        updateMusicState();
         
         if (isPomodoroMode) {
           isFocusMode = !isFocusMode;
@@ -706,6 +772,10 @@
   for (const s of stops) {
     s.el.setAttribute('stop-color', hslToHex(s.hue, s.sat, s.lit));
   }
+  
+  // Initialize music playlist - load first song
+  backgroundMusic.src = musicPlaylist[currentMusicIndex];
+  backgroundMusic.load();
 })();
 </script>
 </body>
