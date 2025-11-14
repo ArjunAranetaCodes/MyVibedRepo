@@ -1,0 +1,105 @@
+.set-tracker {
+  margin-bottom: 2rem;
+}
+
+.set-tracker-header {
+  margin-bottom: 1rem;
+}
+
+.set-tracker-header h4 {
+  margin: 0 0 0.25rem 0;
+  font-size: 1.25rem;
+}
+
+.set-tracker-info {
+  color: var(--text-secondary);
+  font-size: 0.875rem;
+}
+
+.sets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.set-box {
+  background-color: var(--bg-secondary);
+  border: 2px solid var(--border-color);
+  border-radius: 8px;
+  padding: 1rem;
+  text-align: center;
+  position: relative;
+  transition: all 0.2s;
+}
+
+.set-box:hover {
+  border-color: var(--primary-color);
+}
+
+.set-box.completed {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-color: var(--success-color);
+}
+
+.set-box.current {
+  border-color: var(--primary-color);
+  border-width: 3px;
+  box-shadow: 0 0 0 2px rgba(100, 108, 255, 0.2);
+}
+
+.set-number {
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+  color: var(--text-primary);
+}
+
+.set-record {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.set-record-reps {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.set-record-weight {
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+}
+
+.set-checkmark {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.5rem;
+  color: var(--success-color);
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+.set-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.set-edit-input {
+  width: 100%;
+  padding: 0.25rem;
+  font-size: 0.875rem;
+}
+
+.set-edit-actions {
+  display: flex;
+  gap: 0.25rem;
+  justify-content: center;
+}
+
+@media (max-width: 768px) {
+  .sets-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
