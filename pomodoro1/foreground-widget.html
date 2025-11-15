@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Timer Widget</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { 
+    background: rgba(20, 20, 25, 0.95); 
+    font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
+    overflow: hidden;
+  }
+  .foreground-widget { 
+    width: 100%; 
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    justify-content: center;
+  }
+  .foreground-widget-time { 
+    color: #ffffff; 
+    font-size: 64px; 
+    font-weight: 700; 
+    text-align: center; 
+    margin-bottom: 20px;
+    letter-spacing: 0.02em; 
+  }
+  .foreground-widget-controls { 
+    display: flex; 
+    gap: 8px; 
+    justify-content: center;
+  }
+  .foreground-widget-btn { 
+    flex: 1; 
+    background: rgba(123, 87, 255, 0.8); 
+    border: none; 
+    border-radius: 8px; 
+    padding: 12px; 
+    color: #ffffff; 
+    font-size: 14px; 
+    font-weight: 600; 
+    cursor: pointer; 
+    transition: all 0.2s ease; 
+  }
+  .foreground-widget-btn:hover { 
+    background: rgba(123, 87, 255, 1); 
+  }
+  .foreground-widget-btn.secondary { 
+    background: rgba(255, 255, 255, 0.1); 
+  }
+  .foreground-widget-btn.secondary:hover { 
+    background: rgba(255, 255, 255, 0.2); 
+  }
+</style>
+</head>
+<body>
+  <div class="foreground-widget">
+    <div class="foreground-widget-time" id="foregroundWidgetTime">01:00</div>
+    <div class="foreground-widget-controls">
+      <button class="foreground-widget-btn" id="foregroundPausePlayBtn">Start</button>
+      <button class="foreground-widget-btn secondary" id="foregroundModeSwitchBtn" style="display: none;">🔄</button>
+    </div>
+  </div>
+  <script>
+    (function() {
+      const foregroundWidgetTime = document.getElementById('foregroundWidgetTime');
+      const foregroundPausePlayBtn = document.getElementById('foregroundPausePlayBtn');
+      const foregroundModeSwitchBtn = document.getElementById('foregroundModeSwitchBtn');
+      
+      // Listen for messages from parent window
+      window.addEventListener('message', function(event) {
+        // Accept messages from any origin for flexibility, but you can restrict this
+        const data = event.data;
+        
+        if (data.type === 'timerUpdate') {
+          const mm = String(Math.floor(data.remaining / 60)).padStart(2, '0');
+          const ss = String(data.remaining % 60).padStart(2, '0');
+          foregroundWidgetTime.textContent = `${mm}:${ss}`;
+          
+          foregroundPausePlayBtn.textContent = data.isPaused ? 'Start' : 'Pause';
+          
+          if (data.isPomodoroMode) {
+            foregroundModeSwitchBtn.style.display = 'block';
+          } else {
+            foregroundModeSwitchBtn.style.display = 'none';
+          }
+        }
+      });
+      
+      // Request initial state from parent
+      if (window.opener && !window.opener.closed) {
+        window.opener.postMessage({ type: 'requestState' }, '*');
+      }
+      
+      // Button handlers
+      foregroundPausePlayBtn.addEventListener('click', function() {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'pausePlay' }, '*');
+        }
+      });
+      
+      foregroundModeSwitchBtn.addEventListener('click', function() {
+        if (window.opener && !window.opener.closed) {
+          window.opener.postMessage({ type: 'switchMode' }, '*');
+        }
+      });
+      
+      // Update timer display from localStorage as fallback
+      function updateFromStorage() {
+        try {
+          const stored = localStorage.getItem('timerState');
+          if (stored) {
+            const state = JSON.parse(stored);
+            const remaining = Math.max(0, Math.floor(state.remaining / 1000));
+            const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+            const ss = String(remaining % 60).padStart(2, '0');
+            foregroundWidgetTime.textContent = `${mm}:${ss}`;
+            
+            foregroundPausePlayBtn.textContent = state.isPaused ? 'Start' : 'Pause';
+            
+            if (state.isPomodoroMode) {
+              foregroundModeSwitchBtn.style.display = 'block';
+            } else {
+              foregroundModeSwitchBtn.style.display = 'none';
+            }
+          }
+        } catch (e) {
+          console.error('Error reading from storage:', e);
+        }
+      }
+      
+      // Poll localStorage as fallback
+      setInterval(updateFromStorage, 100);
+      updateFromStorage();
+    })();
+  </script>
+</body>
+</html>
+
