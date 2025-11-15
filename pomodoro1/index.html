@@ -555,8 +555,8 @@
   function createPipElements() {
     if (!pipCanvas) {
       pipCanvas = document.createElement('canvas');
-      pipCanvas.width = 320;
-      pipCanvas.height = 240;
+      pipCanvas.width = 400;
+      pipCanvas.height = 300;
       pipCanvas.style.display = 'none';
       document.body.appendChild(pipCanvas);
       pipCtx = pipCanvas.getContext('2d');
@@ -593,17 +593,19 @@
     pipCtx.fillStyle = 'rgba(20, 20, 25, 0.95)';
     pipCtx.fillRect(0, 0, pipCanvas.width, pipCanvas.height);
     
-    // Draw timer text
+    // Draw timer text (perfectly centered vertically)
     pipCtx.fillStyle = '#ffffff';
-    pipCtx.font = 'bold 48px system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+    pipCtx.font = 'bold 72px system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
     pipCtx.textAlign = 'center';
     pipCtx.textBaseline = 'middle';
-    pipCtx.fillText(timeText, pipCanvas.width / 2, pipCanvas.height / 2 - 30);
+    // Center the timer text at exact vertical center
+    pipCtx.fillText(timeText, pipCanvas.width / 2, pipCanvas.height / 2);
     
-    // Draw mode label (smaller)
-    pipCtx.font = '14px system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
+    // Draw mode label (below timer, centered horizontally)
+    pipCtx.font = '18px system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif';
     pipCtx.fillStyle = 'rgba(255, 255, 255, 0.7)';
-    pipCtx.fillText(modeLabel, pipCanvas.width / 2, pipCanvas.height / 2 + 20);
+    pipCtx.textBaseline = 'middle';
+    pipCtx.fillText(modeLabel, pipCanvas.width / 2, pipCanvas.height / 2 + 60);
   }
   
   // Stream canvas to video element
@@ -774,6 +776,7 @@
           pipStream.getTracks().forEach(track => track.stop());
           pipStream = null;
         }
+        // Ensure inline widget is also hidden when exiting PiP
         document.body.classList.remove('foreground-mode');
         foregroundWidget.classList.remove('active');
       } else {
@@ -795,8 +798,9 @@
           await pipVideo.requestPictureInPicture();
           pipWindow = video;
           isForegroundMode = true;
-          document.body.classList.add('foreground-mode');
-          foregroundWidget.classList.add('active');
+          // Don't show inline widget when in PiP mode - only show PiP window
+          document.body.classList.remove('foreground-mode');
+          foregroundWidget.classList.remove('active');
           
           // Update canvas continuously while in PiP
           const pipUpdateInterval = setInterval(() => {
