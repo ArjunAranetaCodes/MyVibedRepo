@@ -44,7 +44,7 @@
   <div class="menu">
     <button class="menu-button" id="menuButton">☰ Menu</button>
     <div class="menu-items" id="menuItems">
-      <div class="menu-item">
+      <div class="menu-item" style="display: none;">
         <span class="menu-item-icon">⏱️</span>
         <span>Timer Settings</span>
         <div class="submenu">
@@ -61,10 +61,25 @@
           <button class="submenu-button" id="applyTimerBtn">Apply</button>
         </div>
       </div>
-      <!-- <div class="menu-item" onclick="console.log('Menu item 2 clicked')">
-        <span class="menu-item-icon">⚙️</span>
-        <span>Settings</span>
-      </div> -->
+      <div class="menu-item">
+        <span class="menu-item-icon">🎵</span>
+        <span>Music</span>
+        <div class="submenu">
+          <label class="submenu-label" for="musicMuteToggle">Mute Music</label>
+          <button class="submenu-button" id="musicMuteToggle" style="margin-bottom: 8px;">Unmute</button>
+          <label class="submenu-label" for="musicPlayMode">Play Mode</label>
+          <select id="musicPlayMode" class="submenu-input" style="margin-bottom: 8px;">
+            <option value="auto">Auto-play with Timer</option>
+            <option value="manual">Manual Control</option>
+          </select>
+          <label class="submenu-label" for="musicSelect">Select Song</label>
+          <select id="musicSelect" class="submenu-input" style="margin-bottom: 8px;">
+            <option value="0">Dusty Loops 1</option>
+            <option value="1">Dusty Loops 2</option>
+          </select>
+          <button class="submenu-button" id="playSelectedMusic">Play Selected</button>
+        </div>
+      </div>
       <div class="menu-item">
         <span class="menu-item-icon">🍅</span>
         <span>Pomodoro</span>
@@ -276,26 +291,36 @@
     'hiphop_playlist/dusty_loops2.mp3'
   ];
   let currentMusicIndex = 0;
+  let isMusicMuted = false;
+  let musicPlayMode = 'auto'; // 'auto' or 'manual'
   
   // Function to load and play next song in playlist
   function playNextMusic() {
     backgroundMusic.src = musicPlaylist[currentMusicIndex];
     backgroundMusic.load();
-    if (!isPaused) {
+    if (!isPaused && !isMusicMuted && musicPlayMode === 'auto') {
       backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
     }
   }
   
-  // When a song ends, play the next one
+  // When a song ends, play the next one (only in auto mode)
   backgroundMusic.addEventListener('ended', function() {
-    currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
-    playNextMusic();
+    if (musicPlayMode === 'auto') {
+      currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+      updateMusicSelect();
+      playNextMusic();
+    }
   });
   
   // Function to control music based on timer state
   function updateMusicState() {
-    if (!isPaused) {
-      // Timer is running - play music
+    // Only auto-control music if in auto mode
+    if (musicPlayMode === 'manual') {
+      return;
+    }
+    
+    if (!isPaused && !isMusicMuted) {
+      // Timer is running and not muted - play music
       // Ensure music source is set to current playlist item
       const currentSrc = musicPlaylist[currentMusicIndex];
       if (!backgroundMusic.src || !backgroundMusic.src.includes(currentSrc)) {
@@ -306,12 +331,79 @@
         backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
       }
     } else {
-      // Timer is paused - pause music
+      // Timer is paused or muted - pause music
       if (!backgroundMusic.paused) {
         backgroundMusic.pause();
       }
     }
   }
+  
+  // Music controls
+  const musicMuteToggle = document.getElementById('musicMuteToggle');
+  const musicPlayModeSelect = document.getElementById('musicPlayMode');
+  const musicSelect = document.getElementById('musicSelect');
+  const playSelectedMusicBtn = document.getElementById('playSelectedMusic');
+  
+  // Update mute button text
+  function updateMuteButton() {
+    musicMuteToggle.textContent = isMusicMuted ? 'Unmute' : 'Mute';
+  }
+  
+  // Mute toggle
+  musicMuteToggle.addEventListener('click', function() {
+    isMusicMuted = !isMusicMuted;
+    updateMuteButton();
+    if (isMusicMuted) {
+      backgroundMusic.pause();
+    } else {
+      // If unmuted and timer is running, resume music (if in auto mode)
+      if (!isPaused && musicPlayMode === 'auto') {
+        updateMusicState();
+      }
+    }
+  });
+  
+  // Play mode change
+  musicPlayModeSelect.addEventListener('change', function() {
+    musicPlayMode = this.value;
+    if (musicPlayMode === 'manual') {
+      // Stop auto-playing when switching to manual
+      if (!isPaused) {
+        backgroundMusic.pause();
+      }
+    } else {
+      // Resume auto-play if timer is running
+      if (!isPaused && !isMusicMuted) {
+        updateMusicState();
+      }
+    }
+  });
+  
+  // Manual song selection and play
+  playSelectedMusicBtn.addEventListener('click', function() {
+    const selectedIndex = parseInt(musicSelect.value);
+    currentMusicIndex = selectedIndex;
+    backgroundMusic.src = musicPlaylist[currentMusicIndex];
+    backgroundMusic.load();
+    if (!isMusicMuted) {
+      backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
+    }
+    updateMusicSelect();
+  });
+  
+  // Update music select when dropdown changes (for manual selection tracking)
+  musicSelect.addEventListener('change', function() {
+    // Just update the index, don't play automatically
+    currentMusicIndex = parseInt(this.value);
+  });
+  
+  // Update music select dropdown to reflect current song
+  function updateMusicSelect() {
+    musicSelect.value = currentMusicIndex.toString();
+  }
+  
+  // Initialize mute button
+  updateMuteButton();
   
   // Background-safe time/title helpers
   function computeRemainingMs(now){
@@ -776,6 +868,8 @@
   // Initialize music playlist - load first song
   backgroundMusic.src = musicPlaylist[currentMusicIndex];
   backgroundMusic.load();
+  // Initialize music select dropdown
+  updateMusicSelect();
 })();
 </script>
 </body>
