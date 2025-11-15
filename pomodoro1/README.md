@@ -51,55 +51,65 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 ### 🎵 Music Features
 
 - **Background Music Playlist**: Play music from the hiphop_playlist folder while timers are running
+- **Expanded Playlist**: Supports 10+ songs including:
+  - Chasing Neon Dreams (1 & 2)
+  - Dusty Loops (1 & 2)
+  - Golden Hour Glow (1 & 2)
+  - Sunset Drifts (1 & 2)
+  - Sunset Radiance (1 & 2)
 - **Automatic Playback**: Music automatically plays when timer starts and pauses when timer is paused
-- **Playlist Cycling**: Automatically cycles through available songs (dusty_loops1.mp3, dusty_loops2.mp3)
+- **Playlist Cycling**: Automatically cycles through all available songs when current song ends
 - **Music Controls**:
   - **Mute/Unmute**: Toggle music on/off
   - **Play Mode**: Choose between Auto-play (syncs with timer) or Manual control
-  - **Song Selection**: Manually select and play specific songs from the playlist
+  - **Next/Previous Buttons**: Navigate to next or previous song in playlist
+  - **Playlist List**: Scrollable list showing all songs with current song highlighted
+  - **Current Song Display**: Shows "X/Total: Song Name" format
+  - **Song Selection**: Manually select and play specific songs from dropdown or playlist list
+  - **Clickable Playlist**: Click any song in the playlist list to play it immediately
 - **Timer Synchronization**: Music state automatically syncs with timer state (plays when running, pauses when paused)
 
-### 🎛️ Menu System
+### 🎛️ Settings System
 
-#### Main Menu
-- **Location**: Top-left corner with hamburger icon (☰)
-- **Menu Items**:
-  - **Timer Settings** (⏱️): Hidden by default - Simple timer configuration with background color options
-  - **Music** (🎵): Music controls including mute, play mode, and song selection
-  - **Pomodoro** (🍅): Full Pomodoro configuration with Focus/Break settings and individual color themes
+#### Settings Button
+- **Location**: Bottom center, in the same row as pause/play, mode switch, and foreground toggle buttons
+- **Icon**: ⚙️ (gear icon)
+- **Function**: Opens a centered popup modal with all settings
 
-#### Music Submenu
-- **Access**: Hover over "Music" (🎵) menu item to reveal submenu
+#### Settings Popup
+- **Access**: Click the settings button (⚙️) in the control row
+- **Layout**: Centered modal with backdrop overlay
+- **Close Options**: 
+  - Click the × button in the header
+  - Click outside the popup (on the overlay)
+  - Automatically closes after applying settings
+- **Sections**: Organized into collapsible sections:
+  1. **Pomodoro** (🍅): Focus/Break settings and background options
+  2. **Music** (🎵): Music controls and playlist management
+  3. **Timer Settings** (⏱️): Hidden by default - Simple timer configuration
+
+#### Music Section
 - **Mute Toggle**: Button to mute/unmute background music
   - Button text changes to "Mute" or "Unmute" based on current state
 - **Play Mode**: Dropdown to select music playback mode
   - **Auto-play with Timer**: Music automatically plays/pauses with timer (default)
   - **Manual Control**: Music is controlled independently of timer state
-- **Song Selection**: Dropdown to choose from available songs
-  - Dusty Loops 1
-  - Dusty Loops 2
-- **Play Selected Button**: Plays the selected song (works in manual mode)
+- **Now Playing Display**: Shows current song in format "X/Total: Song Name"
+- **Navigation Controls**:
+  - **Previous Button** (⏮): Skip to previous song in playlist
+  - **Next Button** (⏭): Skip to next song in playlist
+- **Playlist List**: Scrollable list displaying all songs
+  - Shows numbered list (1, 2, 3, etc.) with formatted song names
+  - Current song highlighted in purple with ▶ indicator
+  - Click any song to play it immediately
+  - Hover effects for better interaction
+  - Max height with scrollbar for long playlists
+- **Song Selection Dropdown**: Dropdown menu to choose from all available songs
+- **Play Selected Button**: Plays the selected song from dropdown
 - **Auto-cycling**: In auto mode, playlist automatically cycles to next song when current song ends
 
-#### Timer Settings Submenu
-- **Access**: Hover over "Timer Settings" menu item to reveal submenu (Note: This menu item is hidden by default)
-- **Timer Input**: Text field to set timer duration in minutes (default: 25)
-- **Background Type**: Dropdown to select background style
-  - **Liquid Glass**: Animated gradient background with flowing effects (default)
-  - **Solid Color**: Solid block color background
-- **Color Picker**: Appears when "Solid Color" is selected
-  - Choose any color for the background
-  - Default: Dark blue-black (#0b0f14)
-- **Dropdown Styling**: Background dropdown uses a black menu/selection for clarity
-- **Apply Button**: Applies the new settings and resets the timer
-  - Sets timer to simple focus-only mode (no Pomodoro cycling)
-  - Applies selected background style
-  - Resets timer state
-  - Starts music if in auto mode
-  - Closes the menu automatically
-
-#### Pomodoro Submenu
-- **Access**: Hover over "Pomodoro" menu item to reveal submenu
+#### Pomodoro Section
+- **Access**: Click settings button (⚙️) and navigate to Pomodoro section in popup
 - **Focus Input**: Text field to set Focus duration in minutes (default: 25)
 - **Break Input**: Text field to set Break duration in minutes (default: 5)
 - **Background Type**: Dropdown to select background style
@@ -114,14 +124,31 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - **Set Buttons**: Buttons to the right of each color picker
   - "Set" next to Focus color instantly applies the chosen Focus color (when in Focus mode and Solid Color is selected)
   - "Set" next to Break color instantly applies the chosen Break color (when in Break mode and Solid Color is selected)
-  - These do not reset timers or close the menu
+  - These do not reset timers or close the popup
 - **Apply Button**: Applies the new settings and resets the timer
   - Enables Pomodoro mode (Focus/Break cycling)
   - Applies selected background style and colors
   - Resets timer state
   - Starts with Focus mode
   - Starts music if in auto mode
-  - Closes the menu automatically
+  - Closes the settings popup automatically
+
+#### Timer Settings Section
+- **Access**: Click settings button (⚙️) and navigate to Timer Settings section in popup (Note: This section is hidden by default)
+- **Timer Input**: Text field to set timer duration in minutes (default: 25)
+- **Background Type**: Dropdown to select background style
+  - **Liquid Glass**: Animated gradient background with flowing effects (default)
+  - **Solid Color**: Solid block color background
+- **Color Picker**: Appears when "Solid Color" is selected
+  - Choose any color for the background
+  - Default: Dark blue-black (#0b0f14)
+- **Dropdown Styling**: Background dropdown uses a black menu/selection for clarity
+- **Apply Button**: Applies the new settings and resets the timer
+  - Sets timer to simple focus-only mode (no Pomodoro cycling)
+  - Applies selected background style
+  - Resets timer state
+  - Starts music if in auto mode
+  - Closes the settings popup automatically
 
 ### 🎬 Animation System
 
@@ -217,11 +244,15 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - Pause/Play functionality
 - Mode switch button for manual Focus/Break switching
 - Auto-pause on timer completion
-- Complete menu system with Music, Timer Settings, and Pomodoro settings
+- Settings popup system with Music, Pomodoro, and Timer Settings sections
+- Settings button integrated into control row
 - **Background music with playlist support**
   - Automatic music playback/pause with timer
-  - Playlist cycling (dusty_loops1.mp3, dusty_loops2.mp3)
+  - Expanded playlist (10+ songs: Chasing Neon Dreams, Dusty Loops, Golden Hour Glow, Sunset Drifts, Sunset Radiance)
   - Music controls (mute, auto/manual mode, song selection)
+  - Next/Previous navigation buttons
+  - Interactive playlist list with clickable songs
+  - Current song display showing song number and name
 - **Picture-in-Picture foreground display**
   - Floating timer window without browser chrome
   - Persistent display across tab switches
@@ -245,8 +276,8 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 
 #### Using Pomodoro Mode
 1. Open `index.html` in a modern web browser
-2. Click the menu button (☰) in the top-left corner
-3. Hover over "Pomodoro" (🍅) to reveal settings
+2. Click the settings button (⚙️) in the control row below the timer
+3. Navigate to the **Pomodoro** section in the settings popup
 4. Enter desired Focus and Break times (in minutes)
 5. (Optional) Select background type:
    - **Liquid Glass**: Animated gradient background (default)
@@ -259,9 +290,9 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 
 #### Using Simple Timer Mode
 1. Open `index.html` in a modern web browser
-2. Click the menu button (☰) in the top-left corner
-3. Note: Timer Settings menu is hidden by default. To access it, you can modify the HTML to show it.
-4. Hover over "Timer Settings" (⏱️) to reveal settings (if visible)
+2. Click the settings button (⚙️) in the control row below the timer
+3. Note: Timer Settings section is hidden by default. To access it, you can modify the HTML to show it.
+4. Navigate to the **Timer Settings** section in the settings popup (if visible)
 5. Enter desired timer duration (in minutes)
 6. (Optional) Select background type:
    - **Liquid Glass**: Animated gradient background (default)
@@ -271,15 +302,22 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 9. Click the play/pause button (⏸/▶) below the timer to control the timer
 
 #### Using Music Features
-1. Click the menu button (☰) in the top-left corner
-2. Hover over "Music" (🎵) to reveal music controls
+1. Click the settings button (⚙️) in the control row below the timer
+2. Navigate to the **Music** section in the settings popup
 3. **Mute/Unmute**: Click the mute button to toggle music on/off
 4. **Play Mode**: Select from dropdown:
    - **Auto-play with Timer**: Music plays when timer runs, pauses when timer pauses (default)
    - **Manual Control**: Control music independently
-5. **Song Selection**: Choose a song from the dropdown
-6. **Play Selected**: Click "Play Selected" to play the chosen song (manual mode)
-7. Music automatically starts when timer starts (in auto mode)
+5. **View Current Song**: See the currently playing song in the "Now Playing" display
+6. **Navigate Songs**:
+   - Click **Previous** (⏮) to go to the previous song
+   - Click **Next** (⏭) to go to the next song
+7. **Browse Playlist**: Scroll through the playlist list to see all available songs
+8. **Select Song**:
+   - Click any song in the playlist list to play it immediately
+   - Or use the dropdown to select a song and click "Play Selected"
+9. Music automatically starts when timer starts (in auto mode)
+10. Playlist automatically cycles to the next song when current song ends (in auto mode)
 
 #### Using Picture-in-Picture Mode
 1. Start a timer (Pomodoro or Simple mode)
@@ -301,7 +339,7 @@ A beautiful, full-screen Pomodoro timer with a stunning liquid glass visual effe
 - Each mode (Timer Settings vs Pomodoro) has independent background color settings
 - The browser tab title reflects the live timer, play/pause state, and current mode
 - Background dropdowns use a black background for the menu and selection
-- **Music files**: Place music files in the `hiphop_playlist/` folder (currently supports dusty_loops1.mp3 and dusty_loops2.mp3)
+- **Music files**: Place music files in the `hiphop_playlist/` folder (supports 10+ songs including Chasing Neon Dreams, Dusty Loops, Golden Hour Glow, Sunset Drifts, Sunset Radiance series)
 - **Music sync**: In auto mode, music automatically plays/pauses with timer state
 - **Picture-in-Picture**: Requires browser support for Picture-in-Picture API (Chrome, Edge recommended)
 - **PiP fallback**: If PiP is not supported, falls back to popup window method

@@ -12,26 +12,27 @@
   /* Optional film softness */
   .grain { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.05; mix-blend-mode: soft-light; }
   
-  /* Menu styles */
-  .menu { position: fixed; top: 14px; left: 14px; z-index: 20; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
-  .menu-button { background: rgba(0, 0, 0, 0.25); border: 1px solid rgba(255, 255, 255, 0.1); color: #e8f6ff; padding: 8px 12px; border-radius: 8px; cursor: pointer; font-weight: 600; letter-spacing: 0.04em; font-size: 14px; backdrop-filter: blur(10px); }
-  .menu-button:hover { background: rgba(0, 0, 0, 0.4); border-color: rgba(255, 255, 255, 0.2); }
-  .menu-items { position: absolute; top: 100%; left: 0; margin-top: 4px; background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 4px; min-width: 160px; backdrop-filter: blur(10px); display: none; }
-  .menu-items.open { display: block; }
-  .menu-item { color: #e8f6ff; padding: 10px 12px; cursor: pointer; border-radius: 6px; display: flex; align-items: center; gap: 8px; font-size: 14px; position: relative; }
-  .menu-item:hover { background: rgba(255, 255, 255, 0.1); }
-  .menu-item-icon { font-size: 18px; }
-  .submenu { position: absolute; left: 100%; top: 0; margin-left: 4px; background: rgba(0, 0, 0, 0.7); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 8px; padding: 12px; min-width: 180px; backdrop-filter: blur(10px); display: none; }
-  .menu-item:hover .submenu { display: block; }
-  .submenu-label { color: #e8f6ff; font-size: 12px; margin-bottom: 4px; display: block; }
-  .submenu-input { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 6px 8px; color: #e8f6ff; font-size: 14px; box-sizing: border-box; margin-bottom: 8px; }
+  /* Settings popup styles */
+  .settings-popup { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 100; background: rgba(0, 0, 0, 0.9); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 16px; padding: 24px; min-width: 400px; max-width: 500px; max-height: 80vh; overflow-y: auto; backdrop-filter: blur(20px); box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5); display: none; font-family: system-ui, Segoe UI, Roboto, Helvetica, Arial, sans-serif; }
+  .settings-popup.open { display: block; }
+  .settings-popup-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); }
+  .settings-popup-title { color: #e8f6ff; font-size: 20px; font-weight: 600; }
+  .settings-popup-close { background: none; border: none; color: rgba(255, 255, 255, 0.5); font-size: 24px; cursor: pointer; padding: 0; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 6px; }
+  .settings-popup-close:hover { background: rgba(255, 255, 255, 0.1); color: rgba(255, 255, 255, 0.8); }
+  .settings-section { margin-bottom: 24px; }
+  .settings-section-title { color: #e8f6ff; font-size: 16px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+  .settings-section-icon { font-size: 20px; }
+  .settings-section-content { background: rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 16px; }
+  .submenu-label { color: #e8f6ff; font-size: 12px; margin-bottom: 6px; display: block; }
+  .submenu-input { width: 100%; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 6px; padding: 8px 10px; color: #e8f6ff; font-size: 14px; box-sizing: border-box; margin-bottom: 12px; }
   .submenu-input:focus { outline: none; border-color: rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.15); }
   .submenu-input::placeholder { color: rgba(232, 246, 255, 0.5); }
-  .submenu-button { width: 100%; background: rgba(123, 87, 255, 0.6); border: 1px solid rgba(123, 87, 255, 0.8); border-radius: 6px; padding: 8px; color: #e8f6ff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 4px; }
+  .submenu-button { width: 100%; background: rgba(123, 87, 255, 0.6); border: 1px solid rgba(123, 87, 255, 0.8); border-radius: 6px; padding: 10px; color: #e8f6ff; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; }
   .submenu-button:hover { background: rgba(123, 87, 255, 0.8); }
-  /* Force black dropdown menu and selection background */
   select.submenu-input { background: #000000 !important; color: #e8f6ff; }
   #backgroundType option, #pomodoroBackgroundType option { background: #000000; color: #e8f6ff; }
+  .settings-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.5); z-index: 99; display: none; backdrop-filter: blur(4px); }
+  .settings-overlay.open { display: block; }
   
   /* Pause/Play button */
   .timer-controls { position: fixed; top: 70%; left: 50%; transform: translate(-50%, -50%); z-index: 15; display: flex; align-items: center; gap: 20px; }
@@ -42,6 +43,8 @@
   .mode-switch-btn.visible { display: flex; }
   .foreground-toggle-btn { width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); transition: all 0.3s ease; line-height: 1; padding: 0; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3); }
   .foreground-toggle-btn:hover { background: rgba(0, 0, 0, 0.7); border-color: rgba(255, 255, 255, 0.5); transform: scale(1.1); }
+  .settings-btn { width: 80px; height: 80px; border-radius: 50%; background: rgba(0, 0, 0, 0.5); border: 2px solid rgba(255, 255, 255, 0.3); color: #ffffff; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; backdrop-filter: blur(10px); transition: all 0.3s ease; line-height: 1; padding: 0; text-align: center; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.3); }
+  .settings-btn:hover { background: rgba(0, 0, 0, 0.7); border-color: rgba(255, 255, 255, 0.5); transform: scale(1.1); }
   
   /* Foreground widget styles */
   .foreground-widget { position: fixed; bottom: 20px; right: 20px; width: 280px; background: rgba(20, 20, 25, 0.95); border-radius: 16px; padding: 20px; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); z-index: 100; display: none; }
@@ -63,72 +66,105 @@
 </style>
 </head>
 <body>
-  <div class="menu">
-    <button class="menu-button" id="menuButton">☰ Menu</button>
-    <div class="menu-items" id="menuItems">
-      <div class="menu-item" style="display: none;">
-        <span class="menu-item-icon">⏱️</span>
-        <span>Timer Settings</span>
-        <div class="submenu">
-          <label class="submenu-label" for="timerInput">Timer (minutes)</label>
-          <input type="text" id="timerInput" class="submenu-input" placeholder="25" />
-          <label class="submenu-label" for="backgroundType">Background</label>
-          <select id="backgroundType" class="submenu-input" style="margin-bottom: 8px;">
-            <option value="liquid-glass">Liquid Glass</option>
-            <option value="solid-color">Solid Color</option>
-          </select>
-          <div id="colorPickerContainer" style="display: none; margin-bottom: 8px;">
-            <input type="color" id="backgroundColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px;" />
-          </div>
-          <button class="submenu-button" id="applyTimerBtn">Apply</button>
-        </div>
-      </div>
-      <div class="menu-item">
-        <span class="menu-item-icon">🎵</span>
-        <span>Music</span>
-        <div class="submenu">
-          <label class="submenu-label" for="musicMuteToggle">Mute Music</label>
-          <button class="submenu-button" id="musicMuteToggle" style="margin-bottom: 8px;">Unmute</button>
-          <label class="submenu-label" for="musicPlayMode">Play Mode</label>
-          <select id="musicPlayMode" class="submenu-input" style="margin-bottom: 8px;">
-            <option value="auto">Auto-play with Timer</option>
-            <option value="manual">Manual Control</option>
-          </select>
-          <label class="submenu-label" for="musicSelect">Select Song</label>
-          <select id="musicSelect" class="submenu-input" style="margin-bottom: 8px;">
-            <option value="0">Dusty Loops 1</option>
-            <option value="1">Dusty Loops 2</option>
-          </select>
-          <button class="submenu-button" id="playSelectedMusic">Play Selected</button>
-        </div>
-      </div>
-      <div class="menu-item">
-        <span class="menu-item-icon">🍅</span>
+  <!-- Settings Popup -->
+  <div class="settings-overlay" id="settingsOverlay"></div>
+  <div class="settings-popup" id="settingsPopup">
+    <div class="settings-popup-header">
+      <div class="settings-popup-title">Settings</div>
+      <button class="settings-popup-close" id="settingsCloseBtn">×</button>
+    </div>
+    
+    <!-- Pomodoro Section -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span class="settings-section-icon">🍅</span>
         <span>Pomodoro</span>
-        <div class="submenu">
-          <label class="submenu-label" for="focusInput">Focus (minutes)</label>
-          <input type="text" id="focusInput" class="submenu-input" placeholder="25" />
-          <label class="submenu-label" for="breakInput">Break (minutes)</label>
-          <input type="text" id="breakInput" class="submenu-input" placeholder="5" />
-          <label class="submenu-label" for="pomodoroBackgroundType">Background</label>
-          <select id="pomodoroBackgroundType" class="submenu-input" style="margin-bottom: 8px;">
-            <option value="liquid-glass">Liquid Glass</option>
-            <option value="solid-color">Solid Color</option>
-          </select>
-          <div id="pomodoroColorPickerContainer" style="display: none;">
-            <label class="submenu-label" for="focusColorPicker">Focus Color</label>
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom: 8px;">
-              <input type="color" id="focusColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px; margin: 0;" />
-              <button class="submenu-button" id="setFocusColorBtn" style="width:auto; white-space:nowrap; margin: 0;">Set</button>
-            </div>
-            <label class="submenu-label" for="breakColorPicker">Break Color</label>
-            <div style="display:flex; gap:8px; align-items:center;">
-              <input type="color" id="breakColorPicker" class="submenu-input" value="#1a2f3a" style="height: 40px; cursor: pointer; padding: 4px; margin: 0;" />
-              <button class="submenu-button" id="setBreakColorBtn" style="width:auto; white-space:nowrap; margin: 0;">Set</button>
-            </div>
+      </div>
+      <div class="settings-section-content">
+        <label class="submenu-label" for="focusInput">Focus (minutes)</label>
+        <input type="text" id="focusInput" class="submenu-input" placeholder="25" />
+        <label class="submenu-label" for="breakInput">Break (minutes)</label>
+        <input type="text" id="breakInput" class="submenu-input" placeholder="5" />
+        <label class="submenu-label" for="pomodoroBackgroundType">Background</label>
+        <select id="pomodoroBackgroundType" class="submenu-input" style="margin-bottom: 12px;">
+          <option value="liquid-glass">Liquid Glass</option>
+          <option value="solid-color">Solid Color</option>
+        </select>
+        <div id="pomodoroColorPickerContainer" style="display: none;">
+          <label class="submenu-label" for="focusColorPicker">Focus Color</label>
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom: 12px;">
+            <input type="color" id="focusColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px; margin: 0; flex: 1;" />
+            <button class="submenu-button" id="setFocusColorBtn" style="width:auto; white-space:nowrap; margin: 0;">Set</button>
           </div>
-          <button class="submenu-button" id="applyPomodoroBtn">Apply</button>
+          <label class="submenu-label" for="breakColorPicker">Break Color</label>
+          <div style="display:flex; gap:8px; align-items:center;">
+            <input type="color" id="breakColorPicker" class="submenu-input" value="#1a2f3a" style="height: 40px; cursor: pointer; padding: 4px; margin: 0; flex: 1;" />
+            <button class="submenu-button" id="setBreakColorBtn" style="width:auto; white-space:nowrap; margin: 0;">Set</button>
+          </div>
         </div>
+        <button class="submenu-button" id="applyPomodoroBtn">Apply</button>
+      </div>
+    </div>
+    
+    <!-- Music Section -->
+    <div class="settings-section">
+      <div class="settings-section-title">
+        <span class="settings-section-icon">🎵</span>
+        <span>Music</span>
+      </div>
+      <div class="settings-section-content">
+        <label class="submenu-label" for="musicMuteToggle">Mute Music</label>
+        <button class="submenu-button" id="musicMuteToggle" style="margin-bottom: 12px;">Unmute</button>
+        <label class="submenu-label" for="musicPlayMode">Play Mode</label>
+        <select id="musicPlayMode" class="submenu-input" style="margin-bottom: 12px;">
+          <option value="auto">Auto-play with Timer</option>
+          <option value="manual">Manual Control</option>
+        </select>
+        
+        <!-- Current Song Display -->
+        <div style="margin-bottom: 12px; padding: 12px; background: rgba(255, 255, 255, 0.05); border-radius: 6px;">
+          <div class="submenu-label" style="margin-bottom: 8px;">Now Playing</div>
+          <div id="currentSongDisplay" style="color: #e8f6ff; font-size: 14px; font-weight: 500;">-</div>
+        </div>
+        
+        <!-- Navigation Controls -->
+        <div style="display: flex; gap: 8px; margin-bottom: 12px;">
+          <button class="submenu-button" id="previousMusicBtn" style="flex: 1; margin: 0;">⏮ Previous</button>
+          <button class="submenu-button" id="nextMusicBtn" style="flex: 1; margin: 0;">Next ⏭</button>
+        </div>
+        
+        <!-- Playlist List -->
+        <label class="submenu-label">Playlist</label>
+        <div id="playlistList" style="max-height: 200px; overflow-y: auto; background: rgba(0, 0, 0, 0.3); border-radius: 6px; padding: 8px; margin-bottom: 12px;">
+          <!-- Playlist items will be dynamically generated here -->
+        </div>
+        
+        <label class="submenu-label" for="musicSelect">Select Song</label>
+        <select id="musicSelect" class="submenu-input" style="margin-bottom: 12px;">
+          <!-- Options will be dynamically generated -->
+        </select>
+        <button class="submenu-button" id="playSelectedMusic">Play Selected</button>
+      </div>
+    </div>
+    
+    <!-- Timer Settings Section (Hidden by default) -->
+    <div class="settings-section" id="timerSettingsSection" style="display: none;">
+      <div class="settings-section-title">
+        <span class="settings-section-icon">⏱️</span>
+        <span>Timer Settings</span>
+      </div>
+      <div class="settings-section-content">
+        <label class="submenu-label" for="timerInput">Timer (minutes)</label>
+        <input type="text" id="timerInput" class="submenu-input" placeholder="25" />
+        <label class="submenu-label" for="backgroundType">Background</label>
+        <select id="backgroundType" class="submenu-input" style="margin-bottom: 12px;">
+          <option value="liquid-glass">Liquid Glass</option>
+          <option value="solid-color">Solid Color</option>
+        </select>
+        <div id="colorPickerContainer" style="display: none; margin-bottom: 12px;">
+          <input type="color" id="backgroundColorPicker" class="submenu-input" value="#0b0f14" style="height: 40px; cursor: pointer; padding: 4px;" />
+        </div>
+        <button class="submenu-button" id="applyTimerBtn">Apply</button>
       </div>
     </div>
   </div>
@@ -137,6 +173,7 @@
     <button class="pause-play-btn" id="pausePlayBtn">▶</button>
     <button class="mode-switch-btn" id="modeSwitchBtn" title="Switch between Focus and Break">🔄</button>
     <button class="foreground-toggle-btn" id="foregroundToggleBtn" title="Toggle Foreground Display">📱</button>
+    <button class="settings-btn" id="settingsBtn" title="Settings">⚙️</button>
   </div>
   <!-- Foreground Widget -->
   <div class="foreground-widget" id="foregroundWidget">
@@ -183,17 +220,33 @@
 
 <script>
 (function(){
-  // Menu toggle
-  const menuButton = document.getElementById('menuButton');
-  const menuItems = document.getElementById('menuItems');
-  menuButton.addEventListener('click', function(e) {
+  // Settings popup toggle
+  const settingsBtn = document.getElementById('settingsBtn');
+  const settingsPopup = document.getElementById('settingsPopup');
+  const settingsOverlay = document.getElementById('settingsOverlay');
+  const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  
+  function openSettings() {
+    settingsPopup.classList.add('open');
+    settingsOverlay.classList.add('open');
+  }
+  
+  function closeSettings() {
+    settingsPopup.classList.remove('open');
+    settingsOverlay.classList.remove('open');
+  }
+  
+  settingsBtn.addEventListener('click', function(e) {
     e.stopPropagation();
-    menuItems.classList.toggle('open');
+    openSettings();
   });
-  document.addEventListener('click', function(e) {
-    if (!menuButton.contains(e.target) && !menuItems.contains(e.target)) {
-      menuItems.classList.remove('open');
-    }
+  
+  settingsCloseBtn.addEventListener('click', closeSettings);
+  settingsOverlay.addEventListener('click', closeSettings);
+  
+  // Close popup when clicking outside (but not on popup content)
+  settingsPopup.addEventListener('click', function(e) {
+    e.stopPropagation();
   });
 
   // Timer settings
@@ -217,26 +270,6 @@
       colorPickerContainer.style.display = 'none';
     }
   });
-  // Keep timer color picker visible while hovering submenu; hide with slight delay on leave
-  let timerPickerHideTimeout = null;
-  const timerSubmenu = applyTimerBtn.closest('.submenu');
-  function showTimerPickerIfNeeded() {
-    if (backgroundType.value === 'solid-color') {
-      colorPickerContainer.style.display = 'block';
-    }
-  }
-  function hideTimerPicker() {
-    colorPickerContainer.style.display = 'none';
-  }
-  if (timerSubmenu) {
-    timerSubmenu.addEventListener('mouseenter', function() {
-      if (timerPickerHideTimeout) { clearTimeout(timerPickerHideTimeout); timerPickerHideTimeout = null; }
-      showTimerPickerIfNeeded();
-    });
-    timerSubmenu.addEventListener('mouseleave', function() {
-      timerPickerHideTimeout = setTimeout(hideTimerPicker, 200);
-    });
-  }
   
   // Pomodoro settings
   const focusInput = document.getElementById('focusInput');
@@ -262,26 +295,6 @@
       pomodoroColorPickerContainer.style.display = 'none';
     }
   });
-  // Keep pomodoro color pickers visible while hovering submenu; hide with slight delay on leave
-  let pomodoroPickerHideTimeout = null;
-  const pomodoroSubmenu = applyPomodoroBtn.closest('.submenu');
-  function showPomodoroPickersIfNeeded() {
-    if (pomodoroBackgroundType.value === 'solid-color') {
-      pomodoroColorPickerContainer.style.display = 'block';
-    }
-  }
-  function hidePomodoroPickers() {
-    pomodoroColorPickerContainer.style.display = 'none';
-  }
-  if (pomodoroSubmenu) {
-    pomodoroSubmenu.addEventListener('mouseenter', function() {
-      if (pomodoroPickerHideTimeout) { clearTimeout(pomodoroPickerHideTimeout); pomodoroPickerHideTimeout = null; }
-      showPomodoroPickersIfNeeded();
-    });
-    pomodoroSubmenu.addEventListener('mouseleave', function() {
-      pomodoroPickerHideTimeout = setTimeout(hidePomodoroPickers, 200);
-    });
-  }
 
   // Set buttons for Pomodoro colors
   setFocusColorBtn.addEventListener('click', function(e) {
@@ -322,28 +335,43 @@
   // Background music playlist
   const backgroundMusic = document.getElementById('backgroundMusic');
   const musicPlaylist = [
+    'hiphop_playlist/chasing_neon_dreams1.mp3',
+    'hiphop_playlist/chasing_neon_dreams2.mp3',
     'hiphop_playlist/dusty_loops1.mp3',
-    'hiphop_playlist/dusty_loops2.mp3'
+    'hiphop_playlist/dusty_loops2.mp3',
+    'hiphop_playlist/golden_hour_glow1.mp3',
+    'hiphop_playlist/golden_hour_glow2.mp3',
+    'hiphop_playlist/sunset_drifts1.mp3',
+    'hiphop_playlist/sunset_drifts2.mp3',
+    'hiphop_playlist/sunset_radiance1.mp3',
+    'hiphop_playlist/sunset_radiance2.mp3'
   ];
   let currentMusicIndex = 0;
   let isMusicMuted = false;
   let musicPlayMode = 'auto'; // 'auto' or 'manual'
   
-  // Function to load and play next song in playlist
+  // Helper function to get song name from path
+  function getSongName(path) {
+    const filename = path.split('/').pop();
+    return filename.replace('.mp3', '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+  }
+  
+  // Function to load and play next song in playlist (used internally)
   function playNextMusic() {
     backgroundMusic.src = musicPlaylist[currentMusicIndex];
     backgroundMusic.load();
     if (!isPaused && !isMusicMuted && musicPlayMode === 'auto') {
       backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
     }
+    updateMusicSelect();
+    updatePlaylistList();
+    updateCurrentSongDisplay();
   }
   
   // When a song ends, play the next one (only in auto mode)
   backgroundMusic.addEventListener('ended', function() {
     if (musicPlayMode === 'auto') {
-      currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
-      updateMusicSelect();
-      playNextMusic();
+      playNextSong();
     }
   });
   
@@ -365,6 +393,9 @@
       if (backgroundMusic.paused) {
         backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
       }
+      // Update UI when music starts
+      updatePlaylistList();
+      updateCurrentSongDisplay();
     } else {
       // Timer is paused or muted - pause music
       if (!backgroundMusic.paused) {
@@ -378,11 +409,104 @@
   const musicPlayModeSelect = document.getElementById('musicPlayMode');
   const musicSelect = document.getElementById('musicSelect');
   const playSelectedMusicBtn = document.getElementById('playSelectedMusic');
+  const previousMusicBtn = document.getElementById('previousMusicBtn');
+  const nextMusicBtn = document.getElementById('nextMusicBtn');
+  const currentSongDisplay = document.getElementById('currentSongDisplay');
+  const playlistList = document.getElementById('playlistList');
+  
+  // Update playlist list display
+  function updatePlaylistList() {
+    playlistList.innerHTML = '';
+    musicPlaylist.forEach((song, index) => {
+      const songName = getSongName(song);
+      const item = document.createElement('div');
+      item.style.cssText = 'padding: 8px 12px; margin-bottom: 4px; border-radius: 4px; cursor: pointer; transition: all 0.2s ease; color: #e8f6ff; font-size: 13px;';
+      item.style.background = index === currentMusicIndex ? 'rgba(123, 87, 255, 0.3)' : 'rgba(255, 255, 255, 0.05)';
+      item.textContent = `${index + 1}. ${songName}`;
+      if (index === currentMusicIndex) {
+        item.textContent += ' ▶';
+      }
+      item.addEventListener('click', function() {
+        currentMusicIndex = index;
+        backgroundMusic.src = musicPlaylist[currentMusicIndex];
+        backgroundMusic.load();
+        if (!isMusicMuted && (musicPlayMode === 'manual' || (!isPaused && musicPlayMode === 'auto'))) {
+          backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
+        }
+        updatePlaylistList();
+        updateMusicSelect();
+        updateCurrentSongDisplay();
+      });
+      item.addEventListener('mouseenter', function() {
+        if (index !== currentMusicIndex) {
+          item.style.background = 'rgba(255, 255, 255, 0.1)';
+        }
+      });
+      item.addEventListener('mouseleave', function() {
+        if (index !== currentMusicIndex) {
+          item.style.background = 'rgba(255, 255, 255, 0.05)';
+        }
+      });
+      playlistList.appendChild(item);
+    });
+  }
+  
+  // Update music select dropdown
+  function updateMusicSelect() {
+    musicSelect.innerHTML = '';
+    musicPlaylist.forEach((song, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = getSongName(song);
+      if (index === currentMusicIndex) {
+        option.selected = true;
+      }
+      musicSelect.appendChild(option);
+    });
+  }
+  
+  // Update current song display
+  function updateCurrentSongDisplay() {
+    if (currentSongDisplay) {
+      const songName = getSongName(musicPlaylist[currentMusicIndex]);
+      currentSongDisplay.textContent = `${currentMusicIndex + 1}/${musicPlaylist.length}: ${songName}`;
+    }
+  }
   
   // Update mute button text
   function updateMuteButton() {
     musicMuteToggle.textContent = isMusicMuted ? 'Unmute' : 'Mute';
   }
+  
+  // Next song
+  function playNextSong() {
+    currentMusicIndex = (currentMusicIndex + 1) % musicPlaylist.length;
+    backgroundMusic.src = musicPlaylist[currentMusicIndex];
+    backgroundMusic.load();
+    if (!isMusicMuted && (musicPlayMode === 'manual' || (!isPaused && musicPlayMode === 'auto'))) {
+      backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
+    }
+    updateMusicSelect();
+    updatePlaylistList();
+    updateCurrentSongDisplay();
+  }
+  
+  // Previous song
+  function playPreviousSong() {
+    currentMusicIndex = (currentMusicIndex - 1 + musicPlaylist.length) % musicPlaylist.length;
+    backgroundMusic.src = musicPlaylist[currentMusicIndex];
+    backgroundMusic.load();
+    if (!isMusicMuted && (musicPlayMode === 'manual' || (!isPaused && musicPlayMode === 'auto'))) {
+      backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
+    }
+    updateMusicSelect();
+    updatePlaylistList();
+    updateCurrentSongDisplay();
+  }
+  
+  // Next/Previous button handlers
+  nextMusicBtn.addEventListener('click', playNextSong);
+  previousMusicBtn.addEventListener('click', playPreviousSong);
   
   // Mute toggle
   musicMuteToggle.addEventListener('click', function() {
@@ -424,20 +548,22 @@
       backgroundMusic.play().catch(err => console.log('Could not play background music:', err));
     }
     updateMusicSelect();
+    updatePlaylistList();
+    updateCurrentSongDisplay();
   });
   
   // Update music select when dropdown changes (for manual selection tracking)
   musicSelect.addEventListener('change', function() {
     // Just update the index, don't play automatically
     currentMusicIndex = parseInt(this.value);
+    updatePlaylistList();
+    updateCurrentSongDisplay();
   });
   
-  // Update music select dropdown to reflect current song
-  function updateMusicSelect() {
-    musicSelect.value = currentMusicIndex.toString();
-  }
-  
-  // Initialize mute button
+  // Initialize music UI
+  updateMusicSelect();
+  updatePlaylistList();
+  updateCurrentSongDisplay();
   updateMuteButton();
   
   // Background-safe time/title helpers
@@ -951,8 +1077,8 @@
         rafId2 = 0;
       }
     }
-    // Close the menu after applying
-    menuItems.classList.remove('open');
+    // Close the settings popup after applying
+    closeSettings();
   });
   
   // Function to apply Pomodoro background settings
@@ -1029,8 +1155,8 @@
     if (!rafId1) {
       rafId1 = requestAnimationFrame(frame);
     }
-    // Close the menu after applying
-    menuItems.classList.remove('open');
+    // Close the settings popup after applying
+    closeSettings();
   });
   // Gentle hue drift for gradient stops with randomized starting colors
   function rand(min, max) { return Math.random() * (max - min) + min; }
